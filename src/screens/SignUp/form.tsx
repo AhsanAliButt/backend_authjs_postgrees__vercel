@@ -20,7 +20,6 @@ import { useRouter } from "next/navigation";
 const formSchema = z
   .object({
     firstname: z.string().min(1, "firstname is required"),
-    lastname: z.string().min(1, "lastname is required"),
     email: z
       .string()
       .min(1, "email is required")
@@ -46,7 +45,6 @@ const SignUpForm = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       firstname: "",
-      lastname: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -72,7 +70,7 @@ const SignUpForm = () => {
             );
             console.log("SIGN UP RESPONSE", response.message);
             await toast.success("Welcome", response.message);
-            router.push("/new-verification");
+            router.push("/verify-user");
           }
         }
       );

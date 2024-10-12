@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
-import NextAuth, { User } from "next-auth";
+import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 const authOptions = {
   providers: [
@@ -17,7 +18,7 @@ const authOptions = {
         }
         try {
           const user = await prisma.user.findUnique({
-            where: { email: credentials.email },
+            where: { email: credentials.email as string },
           });
           if (!user) {
             throw new Error("User not found");
@@ -30,7 +31,7 @@ const authOptions = {
           const userPassword = user.password;
 
           const isPasswordValid = bcrypt.compareSync(
-            credentials.password,
+            credentials.password as string,
             userPassword
           );
 
@@ -62,9 +63,8 @@ const authOptions = {
           return {
             id: user.id,
             email: user.email,
-            firstname: user.name,
-            lastname: user.name,
-            role: user.role,
+            firstname: user.fullname,
+            role: user.role as UserRole,
             verified: user.verified,
           };
         } catch (error: any) {

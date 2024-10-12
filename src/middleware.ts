@@ -8,8 +8,12 @@ export const config = {
 export default auth((req) => {
   const reqUrl = new URL(req.url);
 
-  // Allow access to the sign-in page without authentication
-  if (reqUrl.pathname === "/signin" || reqUrl.pathname === "/signup") {
+  // Allow access to the pages without authentication
+  if (
+    reqUrl.pathname === "/signin" ||
+    reqUrl.pathname === "/signup" ||
+    reqUrl.pathname === "/verify-user"
+  ) {
     return NextResponse.next();
   }
 
