@@ -22,6 +22,7 @@
     "lucide-react": "^0.374.0",
     "next": "latest",
     "next-auth": "beta",
+    "pnpm": "^9.12.1",
     "prisma": "^5.20.0",
     "react": "^18",
     "react-dom": "^18",
