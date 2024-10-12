@@ -46,7 +46,6 @@ const SignInForm = (props: Props) => {
       const response = await signIn("credentials", {
         email: values.email,
         password: values.password,
-        devicetoken: props.devicetoken,
         redirect: false,
         callbackUrl: "http://localhost:3000",
       });

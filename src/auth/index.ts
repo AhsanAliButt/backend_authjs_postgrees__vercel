@@ -1,45 +1,106 @@
+import { prisma } from "@/lib/db";
 import NextAuth, { User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-
-export const BASE_PATH = "/api/auth";
 
 const authOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        username: { label: "Username", type: "text", placeholder: "jsmith" },
-        password: { label: "Password", type: "password" },
+        email: {},
+        password: {},
       },
-      async authorize(credentials): Promise<User | null> {
-        const users = [
-          {
-            id: "test-user-1",
-            userName: "test1",
-            name: "Test 1",
-            password: "pass",
-            email: "test1@donotreply.com",
-          },
-          {
-            id: "test-user-2",
-            userName: "test2",
-            name: "Test 2",
-            password: "pass",
-            email: "test2@donotreply.com",
-          },
-        ];
+      // async authorize(credentials): Promise<User | null> {
+      //   console.log("Credential >>>>", credentials);
+      //   const users = [
+      //     {
+      //       id: "test-user-1",
+      //       userName: "test1@gmail.com",
+      //       name: "Test 1",
+      //       password: "password",
+      //       email: "test1@donotreply.com",
+      //     },
+      //   ];
 
-        // Find user with matching credentials
-        const user = users.find(
-          (user) =>
-            user.userName === credentials?.username &&
-            user.password === credentials?.password
-        );
+      //   // Find user with matching credentials
+      //   const user = users.find(
+      //     (user) =>
+      //       user.email === credentials?.email &&
+      //       user.password === credentials?.password
+      //   );
 
-        // Return user object if found, else null
-        return user
-          ? { id: user.id, name: user.name, email: user.email }
-          : null;
+      //   // Return user object if found, else null
+      //   return user
+      //     ? { id: user.id, name: user.name, email: user.email }
+      //     : null;
+      // },
+      async authorize(credentials: any) {
+        console.log("authorize", credentials);
+        if (!credentials || !credentials.email || !credentials.password) {
+          throw new Error("Missing credentials");
+        }
+        try {
+          // const user = await prisma.user.findUnique({
+          //   where: { email: credentials.email },
+          // });
+          // if (!user) {
+          //   throw new Error("User not found");
+          // }
+          // if (!user.verified) {
+          //   await generateVerificationToken(user.email);
+          //   throw new Error("Verification Email sent... Please Verify");
+          // }
+
+          // const userPassword = user.password;
+
+          // const isPasswordValid = bcrypt.compareSync(
+          //   credentials.password,
+          //   userPassword
+          // );
+
+          // if (!isPasswordValid) {
+          //   throw new Error("Incorrect password");
+          // }
+          // const accesstoken = await signJWT(
+          //   {
+          //     sub: user?.role,
+          //     userId: user?.id,
+          //   },
+          //   { exp: `${"15days"}` }
+          // );
+          const users = [
+            {
+              id: "test-user-1",
+              userName: "test1@gmail.com",
+              name: "Test 1",
+              password: "password",
+              email: "test1@gmail.com",
+              role: "consumers",
+              verified: "45464545",
+            },
+          ];
+
+          const user = users.find(
+            (user) =>
+              user.email === credentials?.email &&
+              user.password === credentials?.password
+          );
+          if (!user) {
+            throw new Error("No User Found");
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            firstname: user.name,
+            lastname: user.name,
+            role: user.role,
+            verified: user.verified,
+          };
+        } catch (error: any) {
+          console.error("Auth Error", error);
+          throw new Error(error); // Throw a generic error message
+        }
       },
     }),
   ],
@@ -59,7 +120,9 @@ const authOptions = {
       return session;
     },
   },
-  basePath: BASE_PATH,
+  pages: {
+    signIn: "/signin",
+  },
   secret: process.env.NEXTAUTH_SECRET,
 };
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth, BASE_PATH } from "@/auth";
+import { auth } from "@/auth";
 
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
@@ -7,14 +7,21 @@ export const config = {
 
 export default auth((req) => {
   const reqUrl = new URL(req.url);
-  if (!req.auth && reqUrl?.pathname !== "/") {
+
+  // Allow access to the sign-in page without authentication
+  if (reqUrl.pathname === "/signin" || reqUrl.pathname === "/signup") {
+    return NextResponse.next();
+  }
+
+  // If not authenticated and not trying to access the sign-in page, redirect to sign-in
+  if (!req.auth) {
     return NextResponse.redirect(
       new URL(
-        `${BASE_PATH}/signin?callbackUrl=${encodeURIComponent(
-          reqUrl?.pathname
-        )}`,
+        `/signin?callbackUrl=${encodeURIComponent(reqUrl.pathname)}`,
         req.url
       )
     );
   }
+
+  return NextResponse.next();
 });
