@@ -1,8 +1,13 @@
+import { Suspense } from "react";
 import NewVerification from "@/screens/Verification";
 import React from "react";
 
-const page = () => {
-  return <NewVerification />;
+const Page = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <NewVerification />
+    </Suspense>
+  );
 };
 
-export default page;
+export default Page;
