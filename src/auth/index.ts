@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import NextAuth, { User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-
+import bcrypt from "bcryptjs";
 const authOptions = {
   providers: [
     CredentialsProvider({
@@ -10,84 +10,54 @@ const authOptions = {
         email: {},
         password: {},
       },
-      // async authorize(credentials): Promise<User | null> {
-      //   console.log("Credential >>>>", credentials);
-      //   const users = [
-      //     {
-      //       id: "test-user-1",
-      //       userName: "test1@gmail.com",
-      //       name: "Test 1",
-      //       password: "password",
-      //       email: "test1@donotreply.com",
-      //     },
-      //   ];
-
-      //   // Find user with matching credentials
-      //   const user = users.find(
-      //     (user) =>
-      //       user.email === credentials?.email &&
-      //       user.password === credentials?.password
-      //   );
-
-      //   // Return user object if found, else null
-      //   return user
-      //     ? { id: user.id, name: user.name, email: user.email }
-      //     : null;
-      // },
       async authorize(credentials: any) {
         console.log("authorize", credentials);
         if (!credentials || !credentials.email || !credentials.password) {
           throw new Error("Missing credentials");
         }
         try {
-          // const user = await prisma.user.findUnique({
-          //   where: { email: credentials.email },
-          // });
-          // if (!user) {
-          //   throw new Error("User not found");
-          // }
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email },
+          });
+          if (!user) {
+            throw new Error("User not found");
+          }
           // if (!user.verified) {
           //   await generateVerificationToken(user.email);
           //   throw new Error("Verification Email sent... Please Verify");
           // }
 
-          // const userPassword = user.password;
+          const userPassword = user.password;
 
-          // const isPasswordValid = bcrypt.compareSync(
-          //   credentials.password,
-          //   userPassword
-          // );
-
-          // if (!isPasswordValid) {
-          //   throw new Error("Incorrect password");
-          // }
-          // const accesstoken = await signJWT(
-          //   {
-          //     sub: user?.role,
-          //     userId: user?.id,
-          //   },
-          //   { exp: `${"15days"}` }
-          // );
-          const users = [
-            {
-              id: "test-user-1",
-              userName: "test1@gmail.com",
-              name: "Test 1",
-              password: "password",
-              email: "test1@gmail.com",
-              role: "consumers",
-              verified: "45464545",
-            },
-          ];
-
-          const user = users.find(
-            (user) =>
-              user.email === credentials?.email &&
-              user.password === credentials?.password
+          const isPasswordValid = bcrypt.compareSync(
+            credentials.password,
+            userPassword
           );
-          if (!user) {
-            throw new Error("No User Found");
+
+          if (!isPasswordValid) {
+            throw new Error("Incorrect password");
           }
+
+          // const users = [
+          //   {
+          //     id: "test-user-1",
+          //     userName: "test1@gmail.com",
+          //     name: "Test 1",
+          //     password: "password",
+          //     email: "test1@gmail.com",
+          //     role: "consumers",
+          //     verified: "45464545",
+          //   },
+          // ];
+
+          // const user = users.find(
+          //   (user) =>
+          //     user.email === credentials?.email &&
+          //     user.password === credentials?.password
+          // );
+          // if (!user) {
+          //   throw new Error("No User Found");
+          // }
 
           return {
             id: user.id,
