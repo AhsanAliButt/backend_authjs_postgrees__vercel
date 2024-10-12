@@ -1,8 +1,10 @@
 "use server";
 
 import { User } from "@prisma/client";
-import { prisma } from "../db";
 import { getVerificationTokenByToken } from "./verificationToken";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 const VerifyToken = async (token: string) => {
   const existingToken = await getVerificationTokenByToken(token);
