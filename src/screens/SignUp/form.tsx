@@ -85,7 +85,7 @@ const SignUpForm = () => {
           render={({ field }) => (
             <FormItem>
               <div className="flex justify-between w-full items-center">
-                <FormLabel>Firstname</FormLabel>
+                <FormLabel>Fullname</FormLabel>
                 <FormMessage />
               </div>
               <FormControl>
