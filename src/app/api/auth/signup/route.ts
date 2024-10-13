@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { UserRole } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { generateVerificationToken } from "@/lib/actions/getVerificationToken";
 
 // import sendOtpVerficationEmail from "@/lib/sendOtp";
 
@@ -44,11 +45,12 @@ export async function POST(req: Request) {
       },
     });
     console.log("NEW USER CREATED", newUser);
-    // const verificationToken = await generateVerificationToken(newUser.email);
-    // const sendOtpResponse = await sendOtpVerficationEmail(
-    //   verificationToken.email,
-    //   verificationToken.token
-    // );
+    const generateTokenAndSendEmail = await generateVerificationToken(
+      newUser.email
+    );
+
+    console.log("generateToken", generateTokenAndSendEmail);
+
     // console.log("SEND USER verifaction email status", sendOtpResponse.message);
     return NextResponse.json(
       { user: newUser, message: "Verification email sent" },
