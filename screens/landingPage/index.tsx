@@ -5,16 +5,48 @@ import React, { useState } from "react";
 
 import { useSession } from "next-auth/react";
 import { signOut } from "next-auth/react";
-import { Toaster } from "sonner";
+import { toast, Toaster } from "sonner";
 import Dropdown from "./Dropdown";
 import UsersList from "../adminTable";
+import { Button } from "@/components/ui/button";
 const LandingPage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { status, update, data: session } = useSession();
+
   console.log("SESSION >>>>", session);
+  const [loading, setLoading] = useState(false);
+
+  const handlePromote = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `/api/auth/become-admin?userId=${session?.user?.id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(data.message);
+        // Optionally, refresh the page or update local state
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.error("Error promoting to admin:", error);
+      toast.error("Failed to promote to admin");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
-      <Toaster />
       {/* navbar start here */}
 
       <nav className="sticky top-0 z-50 bg-black text-white p-4 w-full px-10 flex justify-between items-center">
@@ -143,9 +175,35 @@ const LandingPage = () => {
           <></>
         )}
       </div>
+
+      {/* <div>
+        {session?.user.role !== "ADMIN" ? (
+          <>
+            <div className="mt-20">
+              {" "}
+              Users Button will only show if user is not an admin{" "}
+            </div>
+            <div className="">
+              <Button
+                onClick={handlePromote}
+                disabled={loading}
+                className=" bg-white"
+              >
+                {loading ? "Promoting..." : "Become Admin"}
+              </Button>
+            </div>
+          </>
+        ) : (
+          <></>
+        )}
+      </div> */}
       <div>
         {session?.user.role === "ADMIN" ? (
           <>
+            <div className="mt-20">
+              {" "}
+              Users Table will only show if user is admin{" "}
+            </div>
             <div>
               <UsersList />
             </div>

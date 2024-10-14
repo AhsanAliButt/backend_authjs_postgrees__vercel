@@ -7,6 +7,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "./db";
 import { generateVerificationToken } from "./actions/getVerificationToken";
 import { sendOtpVerification } from "./actions/otpServices";
+import { sendCongratsEmail } from "./actions/welcomeEmail";
 
 export const authOptions = {
   session: {
@@ -56,6 +57,10 @@ export const authOptions = {
             await sendOtpVerification(user.email);
             throw new Error("OTP sent. Please check your email.");
           }
+          if (user.congratsEmailSent === false) {
+            await sendCongratsEmail(user.email);
+          }
+
           const userPassword = user.password;
 
           const isPasswordValid = bcrypt.compareSync(
@@ -83,20 +88,6 @@ export const authOptions = {
   ],
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    // async jwt({ token, user, account }) {
-    //   console.log("jwt token", token, user, "Account", account);
-    //   if (user) {
-    //     token.user = user as User;
-    //     token.accessToken = account?.access_token;
-    //   }
-    //   return { ...token, ...user };
-    // },
-    // async session({ token, session }) {
-    //   if (session?.user) session.user = token.user;
-    //   // session.user.role = token.role;
-
-    //   return session;
-    // },
     async jwt({ token, user, account, trigger, session }) {
       // console.log("Account", account);
       if (user && account) {

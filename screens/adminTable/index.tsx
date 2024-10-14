@@ -18,9 +18,6 @@ const UsersList = () => {
     <div>
       <h1>All Users List</h1>
       <ul>
-        {users.map((user: any) => (
-          <li key={user.id}>{user.email}</li>
-        ))}
         <DataTableDemo users={users} />
       </ul>
     </div>

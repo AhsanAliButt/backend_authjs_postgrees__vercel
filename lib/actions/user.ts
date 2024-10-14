@@ -5,7 +5,7 @@ import { prisma } from "../db";
 import { signIn } from "next-auth/react";
 
 export const register = async (values: any) => {
-  const response = await fetch(`/api/auth/signup`, {
+  const response = await fetch(`http://localhost:3000/api/auth/signup`, {
     method: "POST",
     body: JSON.stringify({
       firstname: values.firstname,
@@ -15,6 +15,8 @@ export const register = async (values: any) => {
       username: values.username,
     }),
   });
+
+  console.log("Response >>> in Api", response);
   return response;
 };
 

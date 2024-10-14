@@ -8,6 +8,11 @@ const ignoreRoute = [
     match: "startWith",
   },
   {
+    path: "/signup",
+    method: "GET",
+    match: "startWith",
+  },
+  {
     path: "/new-verification",
     method: "GET",
     match: "startWith",
@@ -17,41 +22,7 @@ const ignoreRoute = [
     method: "GET",
     match: "startWith",
   },
-  {
-    path: "/api/crons",
-    method: "GET",
-    match: "startWith",
-  },
-  {
-    path: "/api/auth",
-    method: "GET",
-    match: "startWith",
-  },
-  {
-    path: "/api/webhook",
-    method: "POST",
-    match: "startWith",
-  },
-  {
-    path: "/api/admin/analytics/subscriptionanalytics",
-    method: "POST",
-    match: "startWith",
-  },
-  {
-    path: "/api/admin/analytics/useranalytics",
-    method: "POST",
-    match: "startWith",
-  },
-  {
-    path: "/api/admin/analytics/users/getalluser",
-    method: "GET",
-    match: "startWith",
-  },
-  {
-    path: "/api/contact",
-    method: "POST",
-    match: "startWith",
-  },
+
   {
     path: "/api/auth/logout",
     method: "POST",

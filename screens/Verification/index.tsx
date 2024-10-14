@@ -26,7 +26,7 @@ const NewVerification = () => {
         console.log("Data coming From Verify Token", data);
         if (data.status === 201) {
           setSuccess(data.message);
-          router.push("/login");
+          router.push("/signin");
           return;
         } else if (data.status === 404) {
           setError(
