@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 import { sendCongratsEmail } from "@/lib/actions/welcomeEmail";
 
 // The actual API route handler
-export async function GET(req: NextApiRequest, res: NextApiResponse) {
+export async function POST(req: Request) {
   if (req.method !== "GET") {
     return res.status(405).json({ message: "Method Not Allowed" });
   }
@@ -28,11 +28,6 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
     });
 
     // If no users found
-    if (!users || users.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No users with verified emails found" });
-    }
 
     const emailPromises = users.map(async (user) => {
       await sendCongratsEmail(user.email);
