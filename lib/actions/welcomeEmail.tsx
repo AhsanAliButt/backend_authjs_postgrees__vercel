@@ -61,13 +61,6 @@ export const sendVerificationEmail = async (email: string, token: string) => {
 
 export const sendCongratsEmail = async (email: string) => {
   try {
-    const verificationToken = await prisma.user.update({
-      where: { email: email },
-      data: {
-        congratsEmailSent: true,
-      },
-    });
-
     const { data, error } = await resend.emails.send({
       from: `Acme <${process.env.EMAIL_FROM}>`,
       to: [email], // `to` must be in an array

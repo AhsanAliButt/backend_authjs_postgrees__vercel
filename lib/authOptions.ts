@@ -57,9 +57,6 @@ export const authOptions = {
             await sendOtpVerification(user.email);
             throw new Error("OTP sent. Please check your email.");
           }
-          if (user.congratsEmailSent === false) {
-            await sendCongratsEmail(user.email);
-          }
 
           const userPassword = user.password;
 

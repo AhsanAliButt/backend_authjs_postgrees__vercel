@@ -13,10 +13,6 @@ import {
 } from "@react-email/components";
 import * as React from "react";
 
-const baseUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "";
-
 export const WelcomeEmail = ({ message }: { message: any }) => (
   <Html>
     <Head />
@@ -24,7 +20,9 @@ export const WelcomeEmail = ({ message }: { message: any }) => (
     <Body style={main}>
       <Container style={container}>
         <Section style={box}>
-          <Text style={paragraph}>{message}</Text>
+          <Text style={paragraph}>
+            {message} Your are welcome to our website
+          </Text>
           <Hr style={hr} />
           <Text style={footer}>Welcome to our store its congrats email</Text>
         </Section>
