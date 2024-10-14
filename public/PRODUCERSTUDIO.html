@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRODUCER STUDIO</title>
+
+    <!-- Include Wavesurfer CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/wavesurfer.js@4.2.0/dist/wavesurfer.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha384-faRfn3OJ5pFP7fv7+t1d6YBC7zQ2qBbcwz8v2RQMTB/tf6VypO9VIqhX3lZIiwZJ" crossorigin="anonymous">
+
+    <!-- Include Wavesurfer and Microphone plugin JS -->
+    <script src="https://unpkg.com/wavesurfer.js@4.2.0/dist/wavesurfer.min.js"></script>
+    <script src="https://unpkg.com/wavesurfer.js@4.2.0/dist/plugin/wavesurfer.regions.min.js"></script>
+
+    <style>
+    body {
+  font-family: Arial, sans-serif;
+  background-color: #000;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.player {
+  background-color: #1c1c1c;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.waveform {
+  width: 100%;
+  height: 100px;
+  background-color: #333;
+  border-radius: 4px;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.waveform::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: #666;
+  transform: translateY(-50%);
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.controls button {
+  background-color: transparent;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  margin: 0 10px;
+  cursor: pointer;
+}
+
+.presets {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.preset {
+  background-color: #333;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 20px;
+  margin: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.preset:hover {
+  background-color: #555;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.buttons button {
+  background-color: #333;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 20px;
+  margin: 0 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.buttons button:hover {
+  background-color: #555;
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-between; /* Space buttons horizontally */
+    margin-top: 1rem; /* Adjust margin as needed */
+}
+
+.waveform-frame {
+    width: 100%;
+    max-width: 800px; /* Adjust max width as needed */
+    border: 1px solid #ccc; /* Frame border */
+    border-radius: 8px;
+    overflow: hidden; /* Ensure waveform stays within the frame */
+    margin-top: 4rem; /* Increase margin for more space above the waveform */
+    display: flex;
+    justify-content: center; /* Center the waveform horizontally */
+    align-items: center; /* Center the waveform vertically */
+    flex-direction: column; /* Arrange items vertically */
+}
+
+#waveform-container {
+    width: 90%; /* Adjust width as needed */
+    height: 200px; /* Set height of the waveform */
+    padding-top: 6rem; /* Increase padding for more space above the waveform */
+    padding-bottom: 2rem; /* Add padding below the waveform if needed */
+}
+
+
+
+#waveform {
+    width: 100%;
+    height: 400px;
+}
+#dropzone {
+    width: 100%; /* Make the drop zone fill the entire width */
+    max-width: 800px; /* Set the maximum width to match the waveform frame */
+    height: 200px; /* Set the height of the drop zone */
+    border: 2px dashed #ccc; /* Add a dashed border */
+    border-radius: 8px; /* Add border radius for styling */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 1.2rem;
+    color: #666;
+    margin-top: 1rem; /* Add margin as needed */
+}
+#save-whitenoise-container button {
+    background-color: #333;
+    color: #fff;
+    padding: 15px 40px; /* Increase padding for bigger buttons */
+    border: none;
+    border-radius: 20px;
+    margin: 0 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#save-whitenoise-container button:hover {
+    background-color: #555;
+}
+
+
+
+    </style>
+</head>
+
+<body>
+    <header>
+       
+    </header>
+
+    <div class="container">
+        
+        <div id="dropzone" class="waveform-frame">
+            <p>Drag & Drop Audio here</p>
+            <input type="file" id="audioInput" accept="audio/*">
+        </div>
+
+        <!-- Wavesurfer frame -->
+        <div class="waveform-frame">
+            <!-- Wavesurfer container -->
+            <div id="waveform-container">
+                <div id="waveform"></div>
+            </div>
+        </div>
+
+       <!-- Save and WhiteNoise buttons -->
+       <div id="save-whitenoise-container" class="button-container">
+        <!-- Save button -->
+        <button onclick="saveProcessedAudio()"><span class="button-icon">💾</span>Save</button>
+        <!-- Add WhiteNoise button -->
+        <button onclick="addWhiteNoise()"><span class="button-icon">🪄</span> SFX on GRAB </button>
+    </div>
+    
+    </div>
+
+    <footer>
+     
+    </footer>
+    <script>
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const frequencies = [80, 180, 500, 1200, 3000, 5000, 17000];
+
+        // Set compressor parameters
+        const compressor = audioContext.createDynamicsCompressor();
+        compressor.threshold.value = -30; // Lower threshold for heavier compression
+        compressor.ratio.value = 12; // Higher ratio for heavier compression
+        compressor.attack.value = 0.01; // Shorter attack time for more punch
+        compressor.release.value = 0.2; // Shorter release time for more responsiveness
+
+        // Set up a 7-band equalizer
+        const filters = frequencies.map((frequency) => {
+            const filter = audioContext.createBiquadFilter();
+            filter.type = 'peaking';
+            filter.frequency.value = frequency;
+            filter.Q.value = 1;
+            return filter;
+        });
+
+        // Connect the filters in series
+        const equalizer = filters.reduce((prev, current) => {
+            return prev.connect(current);
+        }, audioContext.createGain());
+
+        // Adjust the gain values for each band
+        equalizer.gain = [10, 12, 2, 5, 1, 1, 1]; // Adjust these values for each band
+
+        // Connect the equalizer to the compressor
+        equalizer.connect(compressor);
+
+        // Set up a gain node for volume control
+        const gainNode = audioContext.createGain();
+        gainNode.gain.value = 1.0;
+
+        // Connect the compressor to the gain node
+        compressor.connect(gainNode);
+        gainNode.gain.value = 1.0;
+
+        // Set up a convolver node for reverb
+        const convolver = audioContext.createConvolver();
+        // You can load an impulse response for better reverb effects
+        // For simplicity, we'll use a basic impulse response here
+        convolver.buffer = createReverbImpulseResponse();
+
+        // Connect the convolver to the gain node
+        convolver.connect(gainNode);
+
+        // Connect the gain node to the audio context destination (speakers)
+        gainNode.connect(audioContext.destination);
+
+        // Create a DynamicsCompressorNode
+        const compressorNode = audioContext.createDynamicsCompressor();
+        compressorNode.threshold.value = -30; // Adjust as needed
+        compressorNode.knee.value = 10; // Adjust as needed
+        compressorNode.ratio.value = 12; // Adjust as needed
+        compressorNode.attack.value = 0.003; // Adjust as needed
+        compressorNode.release.value = 0.25; // Adjust as needed
+
+        // Connect the compressorNode to the existing audio processing chain
+        gainNode.connect(compressorNode);
+
+        // Wavesurfer instance
+        const wavesurfer = WaveSurfer.create({
+            container: '#waveform',
+            waveColor: 'violet',
+            progressColor: 'purple',
+            plugins: [
+                WaveSurfer.regions.create(),
+            ],
+        });
+
+        // Enable region plugin
+        wavesurfer.on('ready', function () {
+            wavesurfer.enableDragSelection({
+                color: 'rgba(0, 255, 0, 0.1)',
+                loop: false,
+            });
+        });
+
+        // Event listener for space bar press
+        document.addEventListener('keydown', function (e) {
+            if (e.code === 'Space') {
+                e.preventDefault(); // Prevent page scroll
+                togglePlayStop();
+            }
+        });
+
+        // Variable to track whether audio is playing
+        let isPlaying = false;
+
+        // Function to toggle play and stop
+        function togglePlayStop() {
+            if (isPlaying) {
+                wavesurfer.stop();
+                isPlaying = false;
+            } else {
+                // Start playback
+                isPlaying = true;
+
+                // Get the list of highlighted regions
+                const regions = Object.values(wavesurfer.regions.list);
+
+                // If there are highlighted regions, create a new array of non-highlighted segments
+                if (regions.length > 0) {
+                    const segments = [];
+                    let currentTime = 0;
+
+                    regions.forEach(region => {
+                        // Add the segment before the region starts
+                        if (region.start > currentTime) {
+                            segments.push({ start: currentTime, end: region.start });
+                        }
+
+                        // Update the current time to the end of the region
+                        currentTime = region.end;
+                    });
+
+                    // Add the segment after the last region ends, if any
+                    if (currentTime < wavesurfer.getDuration()) {
+                        segments.push({ start: currentTime, end: wavesurfer.getDuration() });
+                    }
+
+                    // Play non-highlighted segments sequentially
+                    playNonHighlightedSegments(segments);
+                } else {
+                    // If no regions are highlighted, play the entire waveform
+                    wavesurfer.play();
+                }
+            }
+        }
+
+        // Function to play non-highlighted segments sequentially
+        function playNonHighlightedSegments(segments) {
+            if (segments.length === 0) {
+                // If there are no segments, stop playback
+                isPlaying = false;
+                return;
+            }
+
+            // Get the first segment
+            const segment = segments.shift();
+
+            // Play the segment
+            wavesurfer.play(segment.start, segment.end);
+
+            // Set a timeout to play the next segment after the current one ends
+            setTimeout(() => {
+                playNonHighlightedSegments(segments);
+            }, (segment.end - segment.start) * 1000); // Convert time to milliseconds
+        }
+
+        // Function to add delete buttons to highlighted regions
+        wavesurfer.on('region-created', function (region) {
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'delete-button';
+            deleteButton.innerHTML = 'X';
+            deleteButton.onclick = function () {
+                region.remove();
+            };
+
+            region.element.appendChild(deleteButton);
+        });
+
+        function processAudio(file) {
+            const reader = new FileReader();
+
+            reader.onload = async function (e) {
+                const buffer = await audioContext.decodeAudioData(e.target.result);
+
+                // Normalize the audio
+                const normalizedBuffer = normalizeAudio(buffer);
+
+                // Load audio into Wavesurfer without playing
+                wavesurfer.loadDecodedBuffer(normalizedBuffer);
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Automatically trigger processAudio when a file is selected
+        document.getElementById('audioInput').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            processAudio(file);
+        });
+
+        // Function to handle dropped files
+        function handleDrop(event) {
+            event.preventDefault();
+            const file = event.dataTransfer.files[0];
+            processFile(file);
+        }
+
+        // Function to handle file selection from input
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            processFile(file);
+        }
+
+        // Function to process the selected file
+        function processFile(file) {
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = async function (e) {
+                    const buffer = await audioContext.decodeAudioData(e.target.result);
+                    // Normalize the audio
+                    const normalizedBuffer = normalizeAudio(buffer);
+                    // Load audio into Wavesurfer without playing
+                    wavesurfer.loadDecodedBuffer(normalizedBuffer);
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        }
+
+        // Add event listeners to the drop zone and button
+        const dropZone = document.getElementById('uploadZone');
+        const uploadButton = document.getElementById('uploadButton');
+        const fileInput = document.getElementById('audioInput');
+
+        dropZone.addEventListener('dragover', function (event) {
+            event.preventDefault();
+            dropZone.style.backgroundColor = '#eee';
+        });
+
+        dropZone.addEventListener('dragleave', function (event) {
+            event.preventDefault();
+            dropZone.style.backgroundColor = '';
+        });
+
+        dropZone.addEventListener('drop', handleDrop);
+        uploadButton.addEventListener('click', function () {
+            fileInput.click();
+        });
+        fileInput.addEventListener('change', handleFileSelect);
+    // Function to save processed audio
+function saveProcessedAudio() {
+    // Get the edited audio buffer
+    const editedBuffer = wavesurfer.backend.buffer;
+
+    // Get the regions to delete
+    const regions = wavesurfer.regions.list;
+    const regionsToDelete = [];
+    for (const id in regions) {
+        if (regions.hasOwnProperty(id)) {
+            const region = regions[id];
+            regionsToDelete.push(region);
+        }
+    }
+
+    // Create a new buffer to hold the edited audio
+    const buffer = audioContext.createBuffer(
+        editedBuffer.numberOfChannels,
+        Math.floor(editedBuffer.duration * editedBuffer.sampleRate),
+        editedBuffer.sampleRate
+    );
+
+    // Copy non-deleted parts of the audio to the new buffer
+    let offset = 0;
+    for (let channel = 0; channel < editedBuffer.numberOfChannels; channel++) {
+        const channelData = editedBuffer.getChannelData(channel);
+        for (let i = 0; i < channelData.length; i++) {
+            let skipSample = false;
+            for (const region of regionsToDelete) {
+                if (region.start < i / editedBuffer.sampleRate && region.end > i / editedBuffer.sampleRate) {
+                    skipSample = true;
+                    break;
+                }
+            }
+            if (!skipSample) {
+                buffer.getChannelData(channel)[offset] = channelData[i];
+                offset++;
+            }
+        }
+        offset = 0; // Reset offset for next channel
+    }
+
+    // Apply processing to the trimmed buffer
+    const processedBuffer = applyProcessing(buffer);
+
+    // Save the processed audio
+    saveWav(processedBuffer);
+}
+
+
+// Function to apply processing similar to edited buffer
+function applyProcessing(buffer) {
+    // Normalize the audio
+    const normalizedBuffer = normalizeAudio(buffer);
+
+    // Duplicate channels for stereo effect
+    const stereoBuffer = audioContext.createBuffer(
+        2,
+        normalizedBuffer.length,
+        normalizedBuffer.sampleRate
+    );
+
+    for (let channel = 0; channel < 2; channel++) {
+        const channelData = stereoBuffer.getChannelData(channel);
+        channelData.set(normalizedBuffer.getChannelData(0));
+    }
+
+    // Apply additional processing if needed
+
+    return stereoBuffer;
+}
+
+// Example usage:
+// Call saveProcessedAudio with the editedBuffer
+saveProcessedAudio(editedBuffer);
+
+
+
+
+        // Function to play edited audio
+        function playEditedAudio() {
+            const audioInput = document.getElementById('audioInput');
+            const file = audioInput.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = async function (e) {
+                    const buffer = await audioContext.decodeAudioData(e.target.result);
+
+                    // Get the regions and delete them from the buffer
+                    const regions = wavesurfer.regions.list;
+                    for (const id in regions) {
+  if (regions.hasOwnProperty(id)) {
+    const region = regions[id];
+    const start = Math.floor(region.start * trimmedBuffer.sampleRate);
+    const end = Math.ceil(region.end * trimmedBuffer.sampleRate);
+
+    // Calculate average of 10 samples before and after the region
+    const beforeAverage = calculateAverage(trimmedBuffer.getChannelData(0), start - 10, start);
+    const afterAverage = calculateAverage(trimmedBuffer.getChannelData(0), end, end + 10);
+
+    for (let channel = 0; channel < trimmedBuffer.numberOfChannels; channel++) {
+      const channelData = trimmedBuffer.getChannelData(channel);
+
+      // Use a weighted average for smoother transition
+      const weight = 0.5;
+      for (let i = start; i < end; i++) {
+        channelData[i] = weight * beforeAverage + (1 - weight) * afterAverage;
+      }
+    }
+  }
+}
+
+                    const source = audioContext.createBufferSource();
+                    source.buffer = buffer;
+
+                    // Connect the audio source to the equalizer
+                    source.connect(equalizer);
+
+                    // Start playing
+                    source.start();
+                };
+
+                reader.readAsArrayBuffer(file);
+            }
+        }
+        function calculateAverage(data, startIndex, endIndex) {
+  let sum = 0;
+  for (let i = startIndex; i < endIndex; i++) {
+    sum += data[i];
+  }
+  return sum / (endIndex - startIndex);
+}
+        // Function to create a basic impulse response for reverb
+        function createReverbImpulseResponse() {
+            const sampleRate = audioContext.sampleRate;
+            const length = sampleRate * 3;
+            const impulseResponse = audioContext.createBuffer(2, length, sampleRate);
+
+            for (let channel = 0; channel < 2; channel++) {
+                const data = impulseResponse.getChannelData(channel);
+
+                for (let i = 0; i < length; i++) {
+                    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 4);
+                }
+            }
+
+            return impulseResponse;
+        }
+
+        // Function to normalize audio buffer
+        function normalizeAudio(buffer) {
+            const maxAmplitude = getMaxAmplitude(buffer);
+            const scaleFactor = 1 / maxAmplitude;
+
+            const normalizedBuffer = audioContext.createBuffer(
+                buffer.numberOfChannels,
+                buffer.length,
+                buffer.sampleRate
+            );
+
+            for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+                const originalData = buffer.getChannelData(channel);
+                const normalizedData = normalizedBuffer.getChannelData(channel);
+
+                for (let i = 0; i < originalData.length; i++) {
+                    normalizedData[i] = originalData[i] * scaleFactor;
+                }
+            }
+
+            return normalizedBuffer;
+        }
+
+        // Function to get the maximum amplitude of an audio buffer
+        function getMaxAmplitude(buffer) {
+            let maxAmplitude = 0;
+
+            for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+                const data = buffer.getChannelData(channel);
+
+                for (let i = 0; i < data.length; i++) {
+                    const amplitude = Math.abs(data[i]);
+                    maxAmplitude = Math.max(maxAmplitude, amplitude);
+                }
+            }
+
+            return maxAmplitude;
+        }
+
+        // Function to trim silence from audio buffer
+        function trimSilence(editedBuffer) {
+            const threshold = 0.005;
+
+            const start = detectStart(buffer, threshold);
+            const end = detectEnd(buffer, threshold);
+
+            if (start < end) {
+                const trimmedBuffer = audioContext.createBuffer(
+                    buffer.numberOfChannels,
+                    end - start,
+                    buffer.sampleRate
+                );
+
+                for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+                    const originalData = buffer.getChannelData(channel).subarray(start, end);
+                    const trimmedData = trimmedBuffer.getChannelData(channel);
+                    trimmedData.set(originalData);
+                }
+
+                return trimmedBuffer;
+            } else {
+                // If start is greater than or equal to end, return the original buffer
+                return buffer;
+            }
+        }
+
+        // Function to detect the start position of audio signal (non-silent part)
+        function detectStart(buffer, threshold) {
+            const channelData = buffer.getChannelData(0);
+            const length = buffer.length;
+
+            for (let i = 0; length && i < length; i++) {
+                if (Math.abs(channelData[i]) > threshold) {
+                    return i;
+                }
+            }
+
+            // If no non-silent part is found, return the length of the buffer
+            return length;
+        }
+
+        // Function to detect the end position of audio signal (non-silent part)
+        function detectEnd(buffer, threshold) {
+            const channelData = buffer.getChannelData(0);
+            const length = buffer.length;
+
+            for (let i = length - 1; i >= 0; i--) {
+                if (Math.abs(channelData[i]) > threshold) {
+                    return i + 1;
+                }
+            }
+
+            // If no non-silent part is found, return 0
+            return 0;
+        }
+
+        // Function to save WAV file
+        function saveWav(buffer) {
+            const numberOfChannels = buffer.numberOfChannels;
+            const sampleRate = buffer.sampleRate;
+            const length = buffer.length;
+
+            const data = [];
+
+            for (let channel = 0; channel < numberOfChannels; channel++) {
+                data.push(buffer.getChannelData(channel));
+            }
+
+            const interleaved = interleave(data);
+
+            // create WAV blob
+            const waveBlob = new Blob([createWaveFile(interleaved, numberOfChannels, sampleRate)], {
+                type: 'audio/wav',
+            });
+
+            // create download link
+            const url = URL.createObjectURL(waveBlob);
+            const link = document.createElement('a');
+            link.style.display = 'none';
+            link.href = url;
+            link.download = 'processed_audio.wav';
+            document.body.appendChild(link);
+
+            // trigger click
+            link.click();
+
+            // remove link
+            document.body.removeChild(link);
+        }
+
+        // Function to interleave channels
+        function interleave(channels) {
+            const numberOfChannels = channels.length;
+            const length = channels[0].length;
+            const result = new Float32Array(numberOfChannels * length);
+
+            for (let i = 0; i < length; i++) {
+                for (let j = 0; j < numberOfChannels; j++) {
+                    result[i * numberOfChannels + j] = channels[j][i];
+                }
+            }
+
+            return result;
+        }
+
+        // Function to create WAV file
+        function createWaveFile(interleaved, numberOfChannels, sampleRate) {
+            const buffer = new ArrayBuffer(44 + interleaved.length * 2);
+            const view = new DataView(buffer);
+
+            // write RIFF chunk identifier
+            writeString(view, 0, 'RIFF');
+            // write file length minus RIFF identifier length and file length field length (8 bytes)
+            view.setUint32(4, 36 + interleaved.length * 2, true);
+            // write RIFF type
+            writeString(view, 8, 'WAVE');
+            // write format chunk identifier
+            writeString(view, 12, 'fmt ');
+            // write format chunk length
+            view.setUint32(16, 16, true);
+            // write sample format (1 for PCM)
+            view.setUint16(20, 1, true);
+            // write number of channels
+            view.setUint16(22, numberOfChannels, true);
+            // write sample rate
+            view.setUint32(24, sampleRate, true);
+            // write byte rate
+            view.setUint32(28, sampleRate * 4, true);
+            // write block align
+            view.setUint16(32, numberOfChannels * 2, true);
+            // write bits per sample
+            view.setUint16(34, 16, true);
+            // write data chunk identifier
+            writeString(view, 36, 'data');
+            // write data chunk length
+            view.setUint32(40, interleaved.length * 2, true);
+
+            // write the PCM samples
+            floatTo16BitPCM(view, 44, interleaved);
+
+            return buffer;
+        }
+
+        // Function to write string to DataView
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        // Function to convert float to 16-bit PCM
+        function floatTo16BitPCM(output, offset, input) {
+            for (let i = 0; i < input.length; i++, offset += 2) {
+                const sample = Math.max(-1, Math.min(1, input[i]));
+                output.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+            }
+        }
+     // Function to add white noise to the beginning and end of the edited and trimmed audio
+function addWhiteNoise() {
+    const audioInput = document.getElementById('audioInput');
+    const file = audioInput.files[0];
+
+    if (file) {
+        const reader = new FileReader();
+
+        reader.onload = async function (e) {
+            const buffer = await audioContext.decodeAudioData(e.target.result);
+
+            // Get the regions to delete
+            const regions = wavesurfer.regions.list;
+            const regionsToDelete = [];
+            for (const id in regions) {
+                if (regions.hasOwnProperty(id)) {
+                    const region = regions[id];
+                    regionsToDelete.push(region);
+                }
+            }
+
+            // Create a new buffer to hold the edited and trimmed audio with white noise
+            const editedBuffer = audioContext.createBuffer(
+                buffer.numberOfChannels,
+                Math.floor(buffer.duration * buffer.sampleRate),
+                buffer.sampleRate
+            );
+
+            // Copy non-deleted parts of the audio to the new buffer
+            let offset = 0;
+            for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+                const channelData = buffer.getChannelData(channel);
+                for (let i = 0; i < channelData.length; i++) {
+                    let skipSample = false;
+                    for (const region of regionsToDelete) {
+                        if (region.start < i / buffer.sampleRate && region.end > i / buffer.sampleRate) {
+                            skipSample = true;
+                            break;
+                        }
+                    }
+                    if (!skipSample) {
+                        editedBuffer.getChannelData(channel)[offset] = channelData[i];
+                        offset++;
+                    }
+                }
+                offset = 0; // Reset offset for next channel
+            }
+
+            // Apply processing similar to edited buffer
+            const processedBuffer = applyProcessing(editedBuffer);
+
+            // Add white noise to the beginning and end of the processed audio
+            const modifiedBuffer = addWhiteNoiseToBuffer(processedBuffer);
+
+            // Save the modified audio
+            saveWav(modifiedBuffer);
+        };
+
+        reader.readAsArrayBuffer(file);
+    }
+}
+
+// Function to add white noise to the beginning and end of the buffer
+function addWhiteNoiseToBuffer(buffer) {
+    const whiteNoiseDuration = 0.2; // Duration of white noise in seconds
+
+    // Create white noise buffer
+    const whiteNoiseBuffer = audioContext.createBuffer(
+        1, // Mono
+        whiteNoiseDuration * audioContext.sampleRate,
+        audioContext.sampleRate
+    );
+    const whiteNoiseData = whiteNoiseBuffer.getChannelData(0);
+    for (let i = 0; i < whiteNoiseData.length; i++) {
+        whiteNoiseData[i] = Math.random() * 2 - 1; // Generate random noise
+    }
+
+    // Create a new buffer to hold the modified audio with white noise
+    const modifiedBuffer = audioContext.createBuffer(
+        buffer.numberOfChannels,
+        buffer.length + whiteNoiseBuffer.length * 2,
+        buffer.sampleRate
+    );
+
+    // Copy white noise to the beginning and end of the modified buffer
+    for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+        const channelData = modifiedBuffer.getChannelData(channel);
+        const bufferChannelData = buffer.getChannelData(channel);
+
+        // Copy white noise to the beginning
+        for (let i = 0; i < whiteNoiseData.length; i++) {
+            channelData[i] = whiteNoiseData[i];
+        }
+
+        // Copy buffer audio to the middle
+        for (let i = 0; i < bufferChannelData.length; i++) {
+            channelData[i + whiteNoiseData.length] = bufferChannelData[i];
+        }
+
+        // Copy white noise to the end
+        for (let i = 0; i < whiteNoiseData.length; i++) {
+            channelData[i + whiteNoiseData.length + bufferChannelData.length] = whiteNoiseData[i];
+        }
+    }
+
+    return modifiedBuffer;
+}
+
+
+
+
+    
+    </script>
+</body>
+
+</html>

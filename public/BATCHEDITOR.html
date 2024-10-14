@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Station Tagging Machine</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/4.4.0/wavesurfer.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/4.4.0/plugin/wavesurfer.regions.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.2/min/dropzone.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.2/min/dropzone.min.css">
+
+    <style>
+     body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #6f3cc0; /* Dark Purple */
+    color: #040404; /* Light Purple */
+    text-align: center;
+    padding: 20px;
+    margin: 0;
+}
+
+h1 {
+    color: #ffffff; /* Light Purple */
+}
+
+input[type="file"] {
+    display: none;
+}
+
+#fileLabel {
+    display: inline-block;
+    background-color: #9c21fa; /* Purple */
+    color: #070707; /* White */
+    padding: 15px 30px;
+    cursor: pointer;
+    font-size: 18px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+#fileLabel:hover {
+    background-color: #6a3899; /* Darker Purple */
+}
+label {
+    display: inline-block;
+    background-color: #8a00f3; /* Purple */
+    color: #fff; /* White */
+    padding: 15px 30px;
+    cursor: pointer;
+    font-size: 18px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+label:hover {
+    background-color: #6a3899; /* Darker Purple */
+}
+
+.waveform-container {
+    position: relative;
+    width: 90%;
+    margin: 20px auto;
+    background-color: #4d3280; /* Deep Purple */
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.marker-button,
+.buttons-container button {
+    margin: 5px;
+    padding: 15px 30px;
+    font-size: 18px;
+    background-color: #8a00f3; /* Purple */
+    color: #fff; /* White */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.marker-button:hover,
+.buttons-container button:hover {
+    background-color: #6a3899; /* Darker Purple */
+}
+
+
+        #mixTimeLabel,
+        #mixTime {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Bulk Station Tagging Machine</h1>
+
+    <!-- Master audio file input -->
+    <label for="masterAudio">Upload Master Audio File</label>
+    <input type="file" id="masterAudio" accept="audio/*" onchange="loadAudio('masterAudio', 'masterWaveform')"><br>
+
+    <div class="waveform-container">
+        <div id="masterWaveform" class="waveform"></div>
+    </div>
+
+    <!-- Add Marker button -->
+    <button class="marker-button" onclick="addMarker()">Add Marker</button>
+
+    <div id="audioDuration">Audio Duration: <span id="durationPlaceholder">Calculating...</span></div>
+
+    <!-- Play/Pause button -->
+    <button id="playPauseButton" onclick="togglePlayback()">Play</button>
+
+    <!-- Current Time display -->
+    <div id="currentTime">Current Time: 0:00</div>
+
+    <!-- Drop zone for station tag audio files -->
+    <form action="/upload" class="dropzone" id="dropZone">
+        <div class="dz-message" data-dz-message>
+            <span>Drop your station tags here</span>
+        </div>
+    </form>
+
+    <!-- Mixing and Download button -->
+    <div class="buttons-container">
+        <!-- Updated ID for label -->
+        <label id="mixTimeLabel" for="mixTime">Tag Marker (seconds):</label>
+        <input type="number" id="mixTime" placeholder="Tag Marker time">
+        <button onclick="mixAndDownload()">Mix and Download</button>
+
+        <!-- Reset button -->
+        <button onclick="resetPage()">Tag another promo</button>
+    </div>
+
+    <script>
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        let wavesurfer;
+        let isPlaying = false;
+        let markers = [];
+
+        async function loadAudio(inputId, waveformId) {
+    const input = document.getElementById(inputId);
+    if (input.files[0]) {
+        const file = input.files[0];
+        if (!wavesurfer) {
+            wavesurfer = WaveSurfer.create({
+                container: `#${waveformId}`,
+                waveColor: 'violet',
+                progressColor: 'purple',
+                plugins: [
+                    WaveSurfer.regions.create(),
+                ],
+            });
+
+            // Set the volume to 1.0 after creating the wavesurfer object
+            wavesurfer.setVolume(1.0);
+        }
+        wavesurfer.load(URL.createObjectURL(file));
+
+        // Display the audio duration
+                const durationPlaceholder = document.getElementById("durationPlaceholder");
+                const duration = await formatDuration(file);
+                durationPlaceholder.textContent = duration;
+
+                // Add this code to update the current time as the audio progresses
+                if (wavesurfer) {
+                    wavesurfer.on('audioprocess', () => {
+                        const currentTime = wavesurfer.getCurrentTime();
+                        const formattedTime = formatTime(currentTime);
+                        document.getElementById("currentTime").textContent = `Current Time: ${formattedTime}`;
+                    });
+                }
+            }
+        }
+
+        function togglePlayback() {
+            if (wavesurfer) {
+                if (isPlaying) {
+                    wavesurfer.pause();
+                    isPlaying = false;
+                    document.getElementById("playPauseButton").textContent = "Play";
+                } else {
+                    wavesurfer.play();
+                    isPlaying = true;
+                    document.getElementById("playPauseButton").textContent = "Pause";
+                }
+            }
+        }
+
+        function resetWaveform() {
+            if (wavesurfer) {
+                wavesurfer.stop();
+                wavesurfer.seekTo(0);
+                isPlaying = false;
+                document.getElementById("playPauseButton").textContent = "Play";
+            }
+        }
+
+        function deleteMarker(time) {
+    // Remove the marker from the markers array
+    markers = markers.filter(marker => marker.time !== time);
+
+    // Remove the station tag at the specified time
+    const waveformContainer = document.getElementById("masterWaveform");
+    const stationTagToDelete = waveformContainer.querySelector(`[data-id="${time}"]`);
+    if (stationTagToDelete) {
+        stationTagToDelete.remove();
+    }
+}
+
+function addMarker() {
+    if (wavesurfer) {
+        const currentTime = wavesurfer.getCurrentTime();
+
+        // Check the duration of the master audio
+        const masterDuration = wavesurfer.getDuration();
+
+        // Adjust the end time to avoid cutting off the tag if the original audio is not long enough
+        const endTime = Math.min(currentTime + 0.1, masterDuration);
+
+        // Add a region (red "X") to Wavesurfer
+        const region = wavesurfer.addRegion({
+            start: currentTime,
+            end: endTime,
+            drag: {
+                enabled: true,
+                start: function () {
+                    this.originalStart = this.start;
+                },
+                drag: function () {
+                    const newTime = this.start;
+                    updateMarker(this.originalStart, newTime);
+                },
+            },
+            resize: false,
+            color: 'rgba(193, 84, 193, 0.8)', // Violet color with alpha for transparency
+            handleWidth: 0,
+            attributes: {
+                id: `marker-${currentTime}`,
+            },
+        });
+
+        // Add a delete button (red "X") to the region
+        const deleteButton = document.createElement("button");
+        deleteButton.innerHTML = "❌";
+        deleteButton.style.color = "#c154c1"; // Violet color
+        deleteButton.style.background = "transparent";
+        deleteButton.style.border = "none";
+        deleteButton.style.fontSize = "16px";
+        deleteButton.onclick = () => {
+            deleteMarker(region.start);
+            region.remove();
+        };
+
+        // Append the delete button to the region element
+        region.element.appendChild(deleteButton);
+
+        // Store the region in the markers array
+        markers.push({
+            time: currentTime,
+            element: region,
+        });
+
+        // Update the stored time in the markers array when the region is updated
+        region.on('update-end', () => {
+    markers.find(marker => marker.element === region).time = region.start;
+    region.end = region.start + 0.1; // Adjust as needed
+});
+    }
+}
+
+
+
+function seek(time) {
+    if (wavesurfer) {
+        wavesurfer.seek(time);
+    }
+}
+
+function updateMarker(oldTime, newTime) {
+    // Find the marker and station tag in the markers array
+    const markerToUpdate = markers.find(marker => marker.time === oldTime);
+    const stationTagToUpdate = markers.find(marker => marker.time === oldTime).stationTag;
+
+    if (markerToUpdate && stationTagToUpdate) {
+        markerToUpdate.time = newTime;
+        stationTagToUpdate.dataset.id = newTime; // Update data-id attribute
+
+        // Update the marker's position on the Wavesurfer canvas
+        markerToUpdate.element.start = newTime;
+        markerToUpdate.element.end = newTime + 0.1; // Adjust as needed
+
+        // Seek to the updated marker position
+        seek(newTime);
+    }
+}
+
+function applyDynamicProcessing(audioBuffer) {
+    const compressor = audioContext.createDynamicsCompressor();
+
+    // Adjust the compression settings as needed
+    compressor.threshold.setValueAtTime(-60, audioContext.currentTime);
+    compressor.knee.setValueAtTime(30, audioContext.currentTime);
+    compressor.ratio.setValueAtTime(10, audioContext.currentTime);
+    compressor.attack.setValueAtTime(0.05, audioContext.currentTime);
+    compressor.release.setValueAtTime(0.25, audioContext.currentTime);
+
+    // Connect the compressor to the destination (speakers or headphones)
+    compressor.connect(audioContext.destination);
+
+    // Create a new buffer to hold the processed audio
+    const processedBuffer = audioContext.createBuffer(
+        audioBuffer.numberOfChannels,
+        audioBuffer.length,
+        audioBuffer.sampleRate
+    );
+
+    // Initialize the processed buffer
+    for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
+        const originalData = audioBuffer.getChannelData(channel);
+        const processedData = processedBuffer.getChannelData(channel);
+
+        for (let i = 0; i < originalData.length; i++) {
+            processedData[i] = originalData[i];
+        }
+    }
+
+    // Connect the processed buffer to the compressor
+    const processedSource = audioContext.createBufferSource();
+    processedSource.buffer = processedBuffer;
+    processedSource.connect(compressor);
+
+    return processedSource; // Return the processed source node
+}
+
+
+
+
+async function mixAndDownload() {
+    const masterAudio = document.getElementById("masterAudio").files[0];
+    if (!masterAudio) {
+        alert("Please upload the master audio file.");
+        return;
+    }
+
+    const mixTime = parseFloat(document.getElementById("mixTime").value) || 0;
+    if (mixTime < 0) {
+        alert("Mix-in time should be non-negative.");
+        return;
+    }
+
+    const droppedFiles = Dropzone.forElement("#dropZone").getAcceptedFiles();
+    if (droppedFiles.length === 0) {
+        alert("Please drop at least one Station Tag audio file.");
+        return;
+    }
+
+    const masterBuffer = await loadAudioFile(masterAudio);
+
+    if (masterBuffer) {
+        let totalMixDuration = 0;
+
+        for (let i = 0; i < droppedFiles.length; i++) {
+            const stationAudio = droppedFiles[i];
+            const stationBuffer = await loadAudioFile(stationAudio);
+            const processedStationSource = applyDynamicProcessing(stationBuffer);
+
+            const mixedBuffer = mixAudio(masterBuffer, processedStationSource.buffer, mixTime, markers);
+
+            if (mixedBuffer) {
+                const masterFilename = masterAudio.name.replace(/\.[^.]+$/, '');
+                const stationFilename = stationAudio.name.replace(/\.[^.]+$/, '');
+                const mixedFilename = `${stationFilename} - ${masterFilename}.wav`;
+
+                totalMixDuration = Math.max(totalMixDuration, mixedBuffer.duration);
+
+                const audioBlob = audioBufferToBlob(mixedBuffer);
+                saveAudioBlob(audioBlob, mixedFilename);
+            }
+        }
+
+        if (totalMixDuration > masterBuffer.duration) {
+            const extendedMasterBuffer = extendAudioBuffer(masterBuffer, totalMixDuration);
+            const extendedMasterFilename = masterAudio.name.replace(/\.[^.]+$/, '_extended');
+            const extendedMasterBlob = audioBufferToBlob(extendedMasterBuffer);
+            saveAudioBlob(extendedMasterBlob, extendedMasterFilename + '.wav');
+        }
+
+        alert("Mixing and downloading complete.");
+
+    } else {
+        alert("Mixing failed. Make sure you've uploaded the master audio file.");
+    }
+}
+
+function extendAudioBuffer(originalBuffer, targetDuration) {
+    const originalDuration = originalBuffer.duration;
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const extendedBuffer = audioContext.createBuffer(
+        originalBuffer.numberOfChannels,
+        Math.ceil(targetDuration * originalBuffer.sampleRate),
+        originalBuffer.sampleRate
+    );
+
+    for (let channel = 0; channel < originalBuffer.numberOfChannels; channel++) {
+        extendedBuffer.copyToChannel(originalBuffer.getChannelData(channel), channel);
+    }
+
+    return extendedBuffer;
+}
+
+
+
+        
+        function loadAudioFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    const audioData = event.target.result;
+                    try {
+                        const audioBuffer = await audioContext.decodeAudioData(audioData);
+                        resolve(audioBuffer);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        function mixAudio(masterBuffer, stationBuffer, mixTime, markers) {
+    const masterGain = 0.8;
+    const stationGain = 0.7;
+    const duckingFactor = 0.1;
+
+    if (masterBuffer && stationBuffer) {
+        const mixDuration = Math.max(
+    masterBuffer.duration,
+    markers.length > 0 ? markers[markers.length - 1].time + mixTime : 0
+);
+
+        const mixedBuffer = audioContext.createBuffer(
+            masterBuffer.numberOfChannels,
+            Math.ceil(mixDuration * masterBuffer.sampleRate),
+            masterBuffer.sampleRate
+        );
+
+        // Initialize mix array with the master audio
+        const mixArray = [];
+        for (let channel = 0; channel < masterBuffer.numberOfChannels; channel++) {
+            mixArray.push(new Float32Array(mixedBuffer.length).fill(0));
+            mixArray[channel].set(masterBuffer.getChannelData(channel));
+        }
+
+        // Mix the station audio at the specified time for each marker
+        markers.forEach(marker => {
+            const mixStartSample = Math.floor(marker.time * masterBuffer.sampleRate);
+            const stationStartSample = 0;
+            const stationEndSample = Math.min(
+                Math.floor(stationBuffer.duration * stationBuffer.sampleRate),
+                mixedBuffer.length - mixStartSample
+            );
+
+            if (mixStartSample < mixedBuffer.length && stationEndSample > 0) {
+                for (let channel = 0; channel < stationBuffer.numberOfChannels; channel++) {
+                    const stationData = stationBuffer.getChannelData(channel).subarray(
+                        stationStartSample,
+                        stationEndSample
+                    );
+
+                    // Apply ducking and mix the station audio
+                    for (let i = 0; i < stationData.length; i++) {
+                        mixArray[channel][mixStartSample + i] += stationData[i] * stationGain * (1.0 - duckingFactor);
+                    }
+                }
+            }
+        });
+
+        // Copy the mix array into the mixed buffer
+        for (let channel = 0; channel < mixedBuffer.numberOfChannels; channel++) {
+            mixedBuffer.copyToChannel(mixArray[channel], channel);
+        }
+
+        return mixedBuffer;
+    } else {
+        return null;
+    }
+}
+
+
+
+
+
+
+
+
+
+function applyGain(buffer, gain) {
+    // Create a copy of the buffer with gain applied
+    const adjustedBuffer = audioContext.createBuffer(
+        buffer.numberOfChannels,
+        buffer.length,
+        buffer.sampleRate
+    );
+
+    for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+        const originalData = buffer.getChannelData(channel);
+        const adjustedData = adjustedBuffer.getChannelData(channel);
+
+        for (let i = 0; i < originalData.length; i++) {
+            adjustedData[i] = originalData[i] * gain;
+        }
+    }
+
+    return adjustedBuffer;
+}
+
+
+
+
+        function audioBufferToBlob(audioBuffer) {
+            const interleaved = interleave(audioBuffer);
+            const wavBuffer = createWavBuffer(interleaved, audioBuffer.sampleRate);
+            return new Blob([wavBuffer], {
+                type: 'audio/wav'
+            });
+        }
+
+        function interleave(audioBuffer) {
+            const numberOfChannels = audioBuffer.numberOfChannels;
+            const length = audioBuffer.length * numberOfChannels;
+            const result = new Float32Array(length);
+            const channels = [];
+
+            for (let i = 0; i < numberOfChannels; i++) {
+                channels.push(audioBuffer.getChannelData(i));
+            }
+
+            for (let i = 0; i < length; i += numberOfChannels) {
+                for (let j = 0; j < numberOfChannels; j++) {
+                    result[i + j] = channels[j][Math.floor(i / numberOfChannels)];
+                }
+            }
+
+            return result;
+        }
+
+        function createWavBuffer(interleaved, sampleRate) {
+            const buffer = new ArrayBuffer(44 + interleaved.length * 2);
+            const view = new DataView(buffer);
+
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + interleaved.length * 2, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 2, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, interleaved.length * 2, true);
+
+            for (let i = 0; i < interleaved.length; i++) {
+                view.setInt16(44 + i * 2, interleaved[i] * 0x7FFF, true);
+            }
+
+            return buffer;
+        }
+
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        function saveAudioBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    document.body.appendChild(a);  // Append the created element to the body
+    a.href = url;
+    a.download = filename;
+    a.click();
+    document.body.removeChild(a);  // Remove the created element from the body
+    window.URL.revokeObjectURL(url);  // Release the object URL
+}
+
+
+        function formatDuration(file) {
+            const audio = document.createElement('audio');
+            audio.src = URL.createObjectURL(file);
+            return new Promise((resolve) => {
+                audio.onloadedmetadata = () => {
+                    resolve(formatTime(audio.duration));
+                };
+            });
+        }
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+        }
+
+        
+        document.addEventListener("keydown", (event) => {
+    const tagName = event.target.tagName.toLowerCase();
+    if (tagName !== "input" && tagName !== "textarea") {
+        if (event.code === "Space") {
+            event.preventDefault();
+            togglePlayback();
+        } else if (event.key.toLowerCase() === "m") {
+            event.preventDefault();
+            addMarker();
+        }
+    }
+});
+
+    </script>
+    <script>
+        // Initialize Dropzone.js
+        Dropzone.autoDiscover = false;
+
+        function setupDropZone() {
+            new Dropzone("#dropZone", {
+                url: "/upload", // Replace with the desired server endpoint
+                paramName: "file",
+                addRemoveLinks: true,
+                maxFiles: 35, // Limit the number of dropped files
+                init: function () {
+                    this.on("removedfile", function (file) {
+                        // Handle file removal
+                    });
+                },
+            });
+        }
+
+        setupDropZone();
+    </script>
+    <script>
+        function resetPage() {
+            location.reload();
+        }
+    </script>
+</body>
+
+</html>

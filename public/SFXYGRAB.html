@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        body {
+            background-color: #000000; /* background color */
+            color: #373737; /* Dark text color for better readability */
+            font-family: Arial, sans-serif; /* Font style */
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            padding: 20px;
+        }
+
+        #dropArea {
+            border: 2px dashed #ccc;
+            padding: 200px; /* Increased padding for a larger drop zone */
+            text-align: center;
+            margin: 20px auto;
+            max-width: 400px;
+            background-color: #FFFFFF; /* White background color for drop area */
+            border-radius: 10px; /* Rounded corners for drop area */
+            border: 2px solid #b039e3; /* Blue border for drop area */
+        }
+
+        p {
+            margin: 0;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1></h1>
+    <div id="dropArea">
+        <p>Drop your grab here then check your downloads </p>
+        <input type="file" id="audioFileInput" accept=".mp3, .wav" style="display: none;">
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const dropArea = document.getElementById('dropArea');
+            const audioFileInput = document.getElementById('audioFileInput');
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+            dropArea.addEventListener('dragover', (event) => {
+                event.preventDefault();
+                dropArea.style.border = '2px dashed #000';
+            });
+
+            dropArea.addEventListener('dragleave', () => {
+                dropArea.style.border = '2px dashed #ccc';
+            });
+
+            dropArea.addEventListener('drop', (event) => {
+                event.preventDefault();
+                dropArea.style.border = '2px dashed #ccc';
+                const file = event.dataTransfer.files[0];
+                processAndDownloadAudio(file);
+            });
+
+            audioFileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                processAndDownloadAudio(file);
+            });
+
+            async function processAndDownloadAudio(file) {
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+
+                    // Create a new AudioContext for processing
+                    const processingContext = new (window.AudioContext || window.webkitAudioContext)();
+
+                    // Decode the original audio
+                    const originalAudioBuffer = await processingContext.decodeAudioData(arrayBuffer);
+
+                    // Create the SFX (woosh) sound effect
+                    const sfxDuration = 0.3; // seconds
+                    const sfxSampleRate = originalAudioBuffer.sampleRate;
+                    const sfxBuffer = processingContext.createBuffer(
+                        1, // Mono
+                        sfxSampleRate * sfxDuration, // Total samples
+                        sfxSampleRate // Sample rate
+                    );
+                    const sfxData = sfxBuffer.getChannelData(0);
+                    for (let i = 0; i < sfxData.length; i++) {
+                        // Generate a woosh sound (e.g., white noise)
+                        sfxData[i] = (Math.random() * 2 - 1) * 0.5;
+                    }
+
+                    // Create a buffer for the mixed audio
+                    const mixedDuration = originalAudioBuffer.duration + 2 * sfxDuration; // Include SFX
+                    const mixedBuffer = processingContext.createBuffer(
+                        1, // Mono
+                        sfxSampleRate * mixedDuration, // Total samples
+                        sfxSampleRate // Sample rate
+                    );
+                    const mixedData = mixedBuffer.getChannelData(0);
+
+                    // Mix the SFX at the start
+                    for (let i = 0; i < sfxBuffer.length; i++) {
+                        mixedData[i] = sfxData[i];
+                    }
+
+                    // Copy the original audio data
+                    mixedData.set(originalAudioBuffer.getChannelData(0), sfxBuffer.length);
+
+                    // Mix the SFX at the end
+                    for (let i = 0; i < sfxBuffer.length; i++) {
+                        mixedData[i + sfxBuffer.length + originalAudioBuffer.length] = sfxData[i];
+                    }
+
+                    // Convert the mixed audio to WAV format
+                    const mixedBlob = await audioBufferToBlob(mixedBuffer);
+
+                    // Create a download link for the mixed audio
+                    const audioURL = URL.createObjectURL(mixedBlob);
+
+                    // Automatically trigger the download
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = audioURL;
+                    downloadLink.download = file.name.replace(/\.[^/.]+$/, '') + '_with_sfx.wav'; // Adjust the filename
+                    downloadLink.style.display = 'none';
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
+                } catch (error) {
+                    console.error('Error processing audio:', error);
+                }
+            }
+
+            function audioBufferToBlob(buffer) {
+                // Convert the audio buffer to WAV format
+                const interleaved = interleave(buffer.getChannelData(0));
+                const dataView = encodeWAV(interleaved);
+                const audioBlob = new Blob([dataView], { type: 'audio/wav' });
+                return audioBlob;
+            }
+
+            function interleave(input) {
+                const stereoInterleaved = new Float32Array(input.length * 2);
+                for (let i = 0; i < input.length; i++) {
+                    stereoInterleaved[i * 2] = input[i];
+                    stereoInterleaved[i * 2 + 1] = input[i];
+                }
+                return stereoInterleaved;
+            }
+
+            function floatTo16BitPCM(output, offset, input) {
+                for (let i = 0; i < input.length; i++, offset += 2) {
+                    const s = Math.max(-1, Math.min(1, input[i]));
+                    output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+                }
+            }
+
+            function writeString(view, offset, string) {
+                for (let i = 0; i < string.length; i++) {
+                    view.setUint8(offset + i, string.charCodeAt(i));
+                }
+            }
+
+            function encodeWAV(samples) {
+                const buffer = new ArrayBuffer(44 + samples.length * 2);
+                const view = new DataView(buffer);
+
+                /* RIFF identifier */
+                writeString(view, 0, 'RIFF');
+                /* file length */
+                view.setUint32(4, 32 + samples.length * 2, true);
+                /* RIFF type */
+                writeString(view, 8, 'WAVE');
+                /* format chunk identifier */
+                writeString(view, 12, 'fmt ');
+                /* format chunk length */
+                view.setUint32(16, 16, true);
+                /* sample format (1 means Linear PCM) */
+                view.setUint16(20, 1, true);
+                /* channel count (2 channels for stereo) */
+                view.setUint16(22, 2, true);
+                /* sample rate */
+                view.setUint32(24, audioContext.sampleRate, true);
+                /* byte rate (sample rate * block align) */
+                view.setUint32(28, audioContext.sampleRate * 4, true);
+                /* block align (channel count * bytes per sample) */
+                view.setUint16(32, 4, true);
+                /* bits per sample */
+                view.setUint16(34, 16, true);
+                /* data chunk identifier */
+                writeString(view, 36, 'data');
+                /* data chunk length */
+                view.setUint32(40, samples.length * 2, true);
+
+                floatTo16BitPCM(view, 44, samples);
+
+                return view;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -11,15 +11,17 @@ datasource db {
 }
 
 model User {
-    id        String    @id @default(cuid())
-    fullname  String
-    email     String    @unique
-    password  String
-    role      UserRole  @default(USER)
-    verified  DateTime?
-    isAccess  Boolean   @default(false)
-    createdAt DateTime  @default(now()) @map(name: "created_at")
-    updatedAt DateTime  @updatedAt @map(name: "updated_at")
+    id                String    @id @default(cuid())
+    fullname          String
+    email             String    @unique
+    password          String
+    role              UserRole  @default(USER)
+    verified          DateTime?
+    isAccess          Boolean   @default(false)
+    congratsEmailSent Boolean   @default(false) // New field to track email sending
+
+    createdAt DateTime @default(now()) @map(name: "created_at")
+    updatedAt DateTime @updatedAt @map(name: "updated_at")
 
     @@map(name: "users")
 }
@@ -31,6 +33,15 @@ model VerificationToken {
     expires DateTime
 
     @@unique([email, token])
+}
+
+model OtpVerification {
+    id      String   @id @default(cuid())
+    email   String
+    otp     String   @unique
+    expires DateTime
+
+    @@unique([email, otp])
 }
 
 enum UserRole {

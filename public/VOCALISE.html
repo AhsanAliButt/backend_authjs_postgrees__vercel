@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>VOCALISE</title>
+    <style>
+        body {
+            background-color: #030303;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            padding: 20px;
+        }
+
+        #dropArea {
+            border: 2px dashed #620e71;
+            padding: 200px;
+            text-align: center;
+            margin: 20px auto;
+            max-width: 400px;
+            background-color: #2f383b;
+            border-radius: 10px;
+            border: 2px solid #620e71;
+        }
+
+        p {
+            margin: 0;
+        }
+
+        input[type='file'] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1></h1>
+    <div id='dropArea'>
+        <p>Drop your grab here then check your downloads</p>
+        <input type='file' id='audioFileInput' accept='.mp3, .wav' style='display: none;'>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const dropArea = document.getElementById('dropArea');
+            const audioFileInput = document.getElementById('audioFileInput');
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const frequencies = [80, 180, 500, 1200, 3000, 5000, 17000];
+
+            // Set compressor parameters
+            const compressor = audioContext.createDynamicsCompressor();
+            compressor.threshold.value = -30; // Lower threshold for heavier compression
+            compressor.ratio.value = 12; // Higher ratio for heavier compression
+            compressor.attack.value = 0.01; // Shorter attack time for more punch
+            compressor.release.value = 0.2; // Shorter release time for more responsiveness
+
+            // Set up a 7-band equalizer
+            const filters = frequencies.map((frequency) => {
+                const filter = audioContext.createBiquadFilter();
+                filter.type = 'peaking';
+                filter.frequency.value = frequency;
+                filter.Q.value = 1;
+                return filter;
+            });
+
+            // Connect the filters in series
+            const equalizer = filters.reduce((prev, current) => {
+                return prev.connect(current);
+            }, audioContext.createGain());
+
+            // Adjust the gain values for each band
+            equalizer.gain = [10, 12, 2, 5, 1, 1, 1]; // Adjust these values for each band
+
+            // Connect the equalizer to the compressor
+            equalizer.connect(compressor);
+
+            // Set up a gain node for volume control
+            const gainNode = audioContext.createGain();
+            gainNode.gain.value = 1.0;
+
+            // Connect the compressor to the gain node
+            compressor.connect(gainNode);
+            gainNode.gain.value = 1.0;
+
+            // Set up a convolver node for reverb
+            const convolver = audioContext.createConvolver();
+            // You can load an impulse response for better reverb effects
+            // For simplicity, we'll use a basic impulse response here
+            convolver.buffer = createReverbImpulseResponse();
+
+            // Connect the convolver to the gain node
+            convolver.connect(gainNode);
+
+            // Connect the gain node to the audio context destination (speakers)
+            gainNode.connect(audioContext.destination);
+
+            // Create a DynamicsCompressorNode
+            const compressorNode = audioContext.createDynamicsCompressor();
+            compressorNode.threshold.value = -30; // Adjust as needed
+            compressorNode.knee.value = 10; // Adjust as needed
+            compressorNode.ratio.value = 12; // Adjust as needed
+            compressorNode.attack.value = 0.003; // Adjust as needed
+            compressorNode.release.value = 0.25; // Adjust as needed
+
+            // Connect the compressorNode to the existing audio processing chain
+            gainNode.connect(compressorNode);
+
+            dropArea.addEventListener('dragover', (event) => {
+                event.preventDefault();
+                dropArea.style.border = '2px dashed #000';
+            });
+
+            dropArea.addEventListener('dragleave', () => {
+                dropArea.style.border = '2px dashed #ccc';
+            });
+
+            dropArea.addEventListener('drop', (event) => {
+                event.preventDefault();
+                dropArea.style.border = '2px dashed #ccc';
+                const file = event.dataTransfer.files[0];
+                processAndDownloadAudio(file);
+            });
+
+            audioFileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                processAndDownloadAudio(file);
+            });
+
+            async function processAndDownloadAudio(file) {
+    try {
+        const arrayBuffer = await file.arrayBuffer();
+        const originalAudioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        // Apply audio processing
+        const processedBuffer = await applyAudioProcessing(originalAudioBuffer);
+        // Convert the processed audio to WAV format
+        const processedBlob = await audioBufferToBlob(processedBuffer);
+        // Create a download link for the processed audio
+        const audioURL = URL.createObjectURL(processedBlob);
+        const downloadLink = document.createElement('a');
+        downloadLink.href = audioURL;
+        downloadLink.download = file.name.replace(/\.[^/.]+$/, '') + '_processed.wav'; // Adjust the filename
+        downloadLink.style.display = 'none';
+        document.body.appendChild(downloadLink);
+        // Trigger the download programmatically
+        downloadLink.click();
+        // Clean up: remove the download link from the DOM
+        document.body.removeChild(downloadLink);
+    } catch (error) {
+        console.error('Error processing audio:', error);
+    }
+}
+
+
+
+async function applyAudioProcessing(audioBuffer) {
+    // Create an offline audio context
+    const offlineContext = new OfflineAudioContext(audioBuffer.numberOfChannels, audioBuffer.length, audioBuffer.sampleRate);
+
+    // Create processing nodes within the offline context
+    const offlineEqualizer = offlineContext.createBiquadFilter();
+    offlineEqualizer.type = 'peaking';
+    offlineEqualizer.frequency.value = 1000; // Adjust as needed
+    offlineEqualizer.Q.value = 1; // Adjust as needed
+
+    const offlineCompressor = offlineContext.createDynamicsCompressor();
+    offlineCompressor.threshold.value = -30; // Adjust as needed
+    offlineCompressor.knee.value = 10; // Adjust as needed
+    offlineCompressor.ratio.value = 12; // Adjust as needed
+    offlineCompressor.attack.value = 0.003; // Adjust as needed
+    offlineCompressor.release.value = 0.25; // Adjust as needed
+
+    // Create a gain node to control the volume
+    const offlineGainNode = offlineContext.createGain();
+    offlineGainNode.gain.value = 1.0;
+
+    // Connect the processing chain within the offline context
+    offlineEqualizer.connect(offlineCompressor);
+    offlineCompressor.connect(offlineGainNode);
+    offlineGainNode.connect(offlineContext.destination);
+
+    // Create a source node for the audio buffer
+    const source = offlineContext.createBufferSource();
+    source.buffer = audioBuffer;
+
+    // Connect the source node to the processing chain
+    source.connect(offlineEqualizer);
+
+    // Start the source node to begin processing
+    source.start();
+
+    // Render the audio processing offline
+    const renderedBuffer = await offlineContext.startRendering();
+
+    // Return the processed audio buffer
+    return renderedBuffer;
+}
+
+
+
+
+
+            function audioBufferToBlob(buffer) {
+                const interleaved = interleave(buffer.getChannelData(0));
+                const dataView = encodeWAV(interleaved);
+                const audioBlob = new Blob([dataView], { type: 'audio/wav' });
+                return audioBlob;
+            }
+
+            // Helper functions for audio buffer manipulation
+            function interleave(input) {
+                const stereoInterleaved = new Float32Array(input.length * 2);
+                for (let i = 0; i < input.length; i++) {
+                    stereoInterleaved[i * 2] = input[i];
+                    stereoInterleaved[i * 2 + 1] = input[i];
+                }
+                return stereoInterleaved;
+            }
+
+            function encodeWAV(samples) {
+                const buffer = new ArrayBuffer(44 + samples.length * 2);
+                const view = new DataView(buffer);
+
+                writeString(view, 0, 'RIFF');
+                view.setUint32(4, 32 + samples.length * 2, true);
+                writeString(view, 8, 'WAVE');
+                writeString(view, 12, 'fmt ');
+                view.setUint32(16, 16, true);
+                view.setUint16(20, 1, true);
+                view.setUint16(22, 2, true);
+                view.setUint32(24, audioContext.sampleRate, true);
+                view.setUint32(28, audioContext.sampleRate * 4, true);
+                view.setUint16(32, 4, true);
+                view.setUint16(34, 16, true);
+                writeString(view, 36, 'data');
+                view.setUint32(40, samples.length * 2, true);
+
+                floatTo16BitPCM(view, 44, samples);
+
+                return view;
+            }
+
+            function writeString(view, offset, string) {
+                for (let i = 0; i < string.length; i++) {
+                    view.setUint8(offset + i, string.charCodeAt(i));
+                }
+            }
+
+            function floatTo16BitPCM(output, offset, input) {
+                for (let i = 0; i < input.length; i++, offset += 2) {
+                    const s = Math.max(-1, Math.min(1, input[i]));
+                    output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+                }
+            }
+
+            function createReverbImpulseResponse() {
+                const length = audioContext.sampleRate * 2; // Adjust the length as needed
+                const impulse = audioContext.createBuffer(2, length, audioContext.sampleRate);
+                for (let channel = 0; channel < 2; channel++) {
+                    const buffer = impulse.getChannelData(channel);
+                    for (let i = 0; i < length; i++) {
+                        buffer[i] = Math.random() * 2 - 1;
+                    }
+                }
+                return impulse;
+            }
+        });
+    </script>
+</body>
+</html>
