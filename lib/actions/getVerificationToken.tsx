@@ -31,7 +31,7 @@ export const generateVerificationToken = async (email: string) => {
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendVerificationEmail = async (email: string, token: string) => {
-  const verificationLink = `${process.env.VERCEL_URL}/verify-user?token=${token}&email=${email}`; // Construct the verification URL
+  const verificationLink = `https://ahsan-ali-franciso-backend.vercel.app/verify-user?token=${token}&email=${email}`; // Construct the verification URL
 
   try {
     const { data, error } = await resend.emails.send({
