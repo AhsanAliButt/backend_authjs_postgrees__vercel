@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { db } from "@/lib/db";
-import { UserRole } from "@prisma/client";
-import { generateVerificationToken } from "@/lib/tokens";
-import sendOtpVerficationEmail from "@/lib/sendOtp";
+import { prisma } from "@/lib/db";
+import { generateVerificationToken } from "@/lib/actions/getVerificationToken";
+
 // import sendOtpVerficationEmail from "@/lib/sendOtp";
-import prisma from "@/lib/prisma";
 
 export async function POST(req: Request) {
   try {
-    await db.$connect();
+    await prisma.$connect();
     const body = await req.json();
     const { firstname, lastname, email, password } = body;
     console.log("[SIGNUP_USER]", { body });
@@ -40,20 +38,19 @@ export async function POST(req: Request) {
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await prisma.user.create({
       data: {
-        firstname: firstname,
-        lastname: lastname,
+        fullname: firstname,
         email: email,
         password: hashedPassword,
-        role: UserRole.CONSUMER,
       },
     });
     console.log("NEW USER CREATED", newUser);
-    const verificationToken = await generateVerificationToken(newUser.email);
-    const sendOtpResponse = await sendOtpVerficationEmail(
-      verificationToken.email,
-      verificationToken.token
+    const generateTokenAndSendEmail = await generateVerificationToken(
+      newUser.email
     );
-    console.log("SEND USER verifaction email status", sendOtpResponse.message);
+
+    console.log("generateToken", generateTokenAndSendEmail);
+
+    // console.log("SEND USER verifaction email status", sendOtpResponse.message);
     return NextResponse.json(
       { user: newUser, message: "Verification email sent" },
       { status: 201 }
@@ -62,6 +59,6 @@ export async function POST(req: Request) {
     console.error("[SIGNUP_USER_ERROR]", error);
     return new NextResponse("Internal error", { status: 500 });
   } finally {
-    await db.$disconnect();
+    await prisma.$disconnect();
   }
 }

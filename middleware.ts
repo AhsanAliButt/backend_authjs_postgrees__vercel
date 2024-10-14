@@ -100,25 +100,10 @@ export default async function middleware(request: NextRequest) {
     if (pathname.startsWith("/profile") && !isLogin) {
       return NextResponse.redirect(new URL(`/signin`, request.url));
     }
-    if (
-      pathname.startsWith(
-        "/payment" || pathname.startsWith("/confirmpayment")
-      ) &&
-      !isLogin
-    ) {
-      return NextResponse.redirect(new URL(`/signin`, request.url));
-    }
 
     const response = NextResponse.next();
 
     // Restrict access to admin dashboard if the user is not an admin
-
-    if (
-      session?.user?.role === "SELLER" &&
-      pathname.startsWith("/dashboard/apply-sell")
-    ) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
 
     return response;
   } catch (error) {
