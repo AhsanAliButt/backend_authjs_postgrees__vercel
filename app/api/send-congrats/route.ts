@@ -25,7 +25,12 @@ export async function POST(req: Request) {
     });
 
     // If no users found
-
+    if (users.length === 0) {
+      return NextResponse.json(
+        { message: "No users found to welcome" },
+        { status: 404 }
+      );
+    }
     const emailPromises = users.map(async (user) => {
       await sendCongratsEmail(user.email);
       // Update the user's congratsEmail to true
@@ -46,6 +51,7 @@ export async function POST(req: Request) {
     );
   } catch (error) {
     console.error("Error processing users:", error);
-    return res.status(500).json({ message: "Internal Server Error" });
+
+    return NextResponse.json({ message: "Some intel issue" }, { status: 404 });
   }
 }
