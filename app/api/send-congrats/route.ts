@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 import { sendCongratsEmail } from "@/lib/actions/welcomeEmail";
 
 // The actual API route handler
-export async function POST(req: Request) {
+export async function GET(req: Request) {
   try {
     await prisma.$connect();
     // Fetch all users from the database
