@@ -5,11 +5,8 @@ import { NextResponse } from "next/server";
 import { sendCongratsEmail } from "@/lib/actions/welcomeEmail";
 
 // The actual API route handler
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== "POST") {
+export async function GET(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== "GET") {
     return res.status(405).json({ message: "Method Not Allowed" });
   }
 
