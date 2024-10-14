@@ -6,11 +6,8 @@ import { sendCongratsEmail } from "@/lib/actions/welcomeEmail";
 
 // The actual API route handler
 export async function POST(req: Request) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ message: "Method Not Allowed" });
-  }
-
   try {
+    await prisma.$connect();
     // Fetch all users from the database
     const oneHourAgo = subHours(new Date(), 1);
     const users = await prisma.user.findMany({
