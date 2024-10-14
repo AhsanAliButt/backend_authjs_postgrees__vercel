@@ -1,6 +1,7 @@
 "use client";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import DataTableDemo from "./DataTable";
 const UsersList = () => {
   const [users, setUsers] = useState([]);
   const { data: session } = useSession();
@@ -20,6 +21,7 @@ const UsersList = () => {
         {users.map((user: any) => (
           <li key={user.id}>{user.email}</li>
         ))}
+        <DataTableDemo users={users} />
       </ul>
     </div>
   );
