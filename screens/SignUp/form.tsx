@@ -78,17 +78,20 @@ const SignUpForm = () => {
     // });
     startTransition(async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/auth/signup`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json", // Set the content type
-          },
-          body: JSON.stringify({
-            firstname: values.firstname,
-            email: values.email,
-            password: values.password,
-          }),
-        });
+        const response = await fetch(
+          `https://ahsan-ali-franciso-backend.vercel.app//api/auth/signup`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json", // Set the content type
+            },
+            body: JSON.stringify({
+              firstname: values.firstname,
+              email: values.email,
+              password: values.password,
+            }),
+          }
+        );
 
         const data = await response.json(); // Parse the JSON response
         console.log("Data >>>>>>", data);
