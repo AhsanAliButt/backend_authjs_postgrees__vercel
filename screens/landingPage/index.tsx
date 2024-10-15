@@ -20,7 +20,7 @@ const LandingPage = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `/api/become-admin?userId=${session?.user?.id}`,
+        `https://ahsan-ali-franciso-backend.vercel.app/api/become-admin?userId=${session?.user?.id}`,
         {
           method: "POST",
           headers: {

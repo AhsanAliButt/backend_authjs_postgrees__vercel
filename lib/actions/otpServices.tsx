@@ -43,7 +43,7 @@ export const sendVerificationEmail = async (email: string, token: string) => {
     const { data, error } = await resend.emails.send({
       from: `Acme <${process.env.EMAIL_FROM}>`,
       to: [email], // `to` must be in an array
-      subject: "Verify Your Account",
+      subject: "Verify Otp",
       react: PlaidVerifyIdentityEmail({ validationCode: verificationLink }), // Pass the firstName to your EmailTemplate
     });
 
