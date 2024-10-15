@@ -25,7 +25,7 @@ const Dropdown = ({ user }: { user: any }) => {
             <Avatar className="h-10 w-10">
               <AvatarImage src="/avatars/01.png" alt="@shadcn" />
               <AvatarFallback className="bg-black text-white">
-                {user?.user?.firstname?.slice(0, 2).toUpperCase()}
+                {user?.user?.fullname?.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
           </Button>
@@ -34,7 +34,7 @@ const Dropdown = ({ user }: { user: any }) => {
           <DropdownMenuLabel className="font-normal z-50">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">
-                {user?.user?.username}
+                {user?.user?.fullname}
               </p>
               <p className="text-xs leading-none text-muted-foreground">
                 {user?.user?.email}
