@@ -177,7 +177,7 @@ const LandingPage = () => {
       </div>
 
       <div>
-        {session?.user.role !== "ADMIN" ? (
+        {session && session?.user.role !== "ADMIN" ? (
           <>
             <div className="mt-20">
               {" "}

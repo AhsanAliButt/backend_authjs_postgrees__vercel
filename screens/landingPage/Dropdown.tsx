@@ -14,9 +14,8 @@ import { signOut } from "next-auth/react";
 import Link from "next/link";
 
 const Dropdown = ({ user }: { user: any }) => {
-  console.log("USER IN DROPDOWN", user?.user?.firstname);
   return (
-    <div className="hidden md:flex">
+    <div className="hidden md:flex border-2 border-white">
       <DropdownMenu>
         <DropdownMenuTrigger asChild className="z-50 mt-2">
           <Button
