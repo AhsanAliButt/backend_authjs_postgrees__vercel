@@ -2,6 +2,7 @@ import { getVerificationTokenByEmail } from "./verificationToken";
 import { prisma } from "../db";
 import { Resend } from "resend";
 import MagicLinkEmail from "@/react-email-starter/emails/MagicLinkEmail";
+import PlaidVerifyIdentityEmail from "@/react-email-starter/emails/plaid-verify-identity";
 
 // Generate a 4-digit OTP
 const generateOtp = () => {
@@ -43,7 +44,7 @@ export const sendVerificationEmail = async (email: string, token: string) => {
       from: `Acme <${process.env.EMAIL_FROM}>`,
       to: [email], // `to` must be in an array
       subject: "Verify Your Account",
-      react: MagicLinkEmail({ loginLink: verificationLink }), // Pass the firstName to your EmailTemplate
+      react: PlaidVerifyIdentityEmail({ validationCode: verificationLink }), // Pass the firstName to your EmailTemplate
     });
 
     if (error) {

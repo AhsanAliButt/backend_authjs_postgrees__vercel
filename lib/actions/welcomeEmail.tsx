@@ -64,7 +64,7 @@ export const sendCongratsEmail = async (email: string) => {
     const { data, error } = await resend.emails.send({
       from: `Acme <${process.env.EMAIL_FROM}>`,
       to: [email], // `to` must be in an array
-      subject: "Verify Your Account",
+      subject: "Welcome to our Website",
       react: WelcomeEmail({ message: email }), // Pass the firstName to your EmailTemplate
     });
 

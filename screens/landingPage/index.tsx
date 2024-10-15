@@ -20,7 +20,7 @@ const LandingPage = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `/api/auth/become-admin?userId=${session?.user?.id}`,
+        `http://localhost:3000/api/auth/become-admin?userId=${session?.user?.id}`,
         {
           method: "POST",
           headers: {
@@ -176,7 +176,7 @@ const LandingPage = () => {
         )}
       </div>
 
-      {/* <div>
+      <div>
         {session?.user.role !== "ADMIN" ? (
           <>
             <div className="mt-20">
@@ -196,7 +196,7 @@ const LandingPage = () => {
         ) : (
           <></>
         )}
-      </div> */}
+      </div>
       <div>
         {session?.user.role === "ADMIN" ? (
           <>

@@ -35,21 +35,12 @@ export const PlaidVerifyIdentityEmail = ({
         />
         <Text style={tertiary}>Verify Your Identity</Text>
         <Heading style={secondary}>
-          Enter the following code to finish linking Venmo.
+          Enter the following code to get access.
         </Heading>
         <Section style={codeContainer}>
           <Text style={code}>{validationCode}</Text>
         </Section>
-        <Text style={paragraph}>Not expecting this email?</Text>
-        <Text style={paragraph}>
-          Contact{" "}
-          <Link href="mailto:login@plaid.com" style={link}>
-            login@plaid.com
-          </Link>{" "}
-          if you did not request this code.
-        </Text>
       </Container>
-      <Text style={footer}>Securely powered by Plaid.</Text>
     </Body>
   </Html>
 );

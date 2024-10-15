@@ -16,10 +16,6 @@ interface MagicLinkEmailProps {
   name?: string;
 }
 
-const baseUrl = process.env.VERCEL_URL
-  ? `${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
-
 export const MagicLinkEmail = ({ loginLink }: MagicLinkEmailProps) => (
   <Html>
     <Head />
