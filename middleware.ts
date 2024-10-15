@@ -17,11 +17,6 @@ const ignoreRoute = [
     method: "GET",
     match: "startWith",
   },
-  {
-    path: "/reset-password",
-    method: "GET",
-    match: "startWith",
-  },
 
   {
     path: "/api/auth/logout",
