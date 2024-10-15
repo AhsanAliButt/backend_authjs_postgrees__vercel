@@ -15,12 +15,12 @@ import Link from "next/link";
 
 const Dropdown = ({ user }: { user: any }) => {
   return (
-    <div className="hidden md:flex border-2 border-white">
+    <div className="hidden md:flex">
       <DropdownMenu>
         <DropdownMenuTrigger asChild className="z-50 mt-2">
           <Button
             variant="ghost"
-            className="relative h-12 w-12 rounded-full border-2 border-color-black"
+            className="relative h-12 w-12 rounded-full border-2 border-white"
           >
             <Avatar className="h-10 w-10">
               <AvatarImage src="/avatars/01.png" alt="@shadcn" />

@@ -20,7 +20,7 @@ const LandingPage = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:3000/api/auth/become-admin?userId=${session?.user?.id}`,
+        `/api/become-admin?userId=${session?.user?.id}`,
         {
           method: "POST",
           headers: {
@@ -37,9 +37,9 @@ const LandingPage = () => {
       } else {
         toast.error(data.message);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error promoting to admin:", error);
-      toast.error("Failed to promote to admin");
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
