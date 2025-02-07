@@ -40,56 +40,96 @@ const SignInForm = (props: Props) => {
       email: "",
     },
   });
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    startTransition(async () => {
-      try {
-        // Call the signIn method from next-auth
-        const response = await signIn("credentials", {
-          email: values.email,
-          password: values.password,
-          redirect: false, // Don't redirect automatically
-        });
+  // const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  //   startTransition(async () => {
+  //     try {
+  //       // Call the signIn method from next-auth
+  //       const response = await signIn("credentials", {
+  //         email: values.email,
+  //         password: values.password,
+  //         redirect: false, // Don't redirect automatically
+  //       });
 
-        console.log("Response in Server Action", response); // Debugging line to see the response
+  //       console.log("Response in Server Action", response); // Debugging line to see the response
 
-        if (response?.error && response.error === "Error: User not found") {
-          toast.error(response.error);
+  //       if (response?.error && response.error === "Error: User not found") {
+  //         toast.error(response.error);
+  //       }
+  //       if (response?.error && response.error === "Error: Incorrect password") {
+  //         toast.error(response.error);
+  //       }
+  //       if (
+  //         response?.error &&
+  //         response.error === "Error: Verification Email sent... Please Verify"
+  //       ) {
+  //         toast.error(response.error);
+  //         router.push(`/verify-user`);
+  //         return;
+  //       }
+  //       if (
+  //         response?.error &&
+  //         response.error === "Error: OTP sent. Please check your email."
+  //       ) {
+  //         toast.error(response.error);
+  //         router.push(`/verify-otp/${values.email}`);
+  //         return;
+  //       }
+
+  //       // If successful
+  //       if (response?.ok) {
+  //         toast.success("Login successful!"); // Notify user of successful login
+  //         // Redirect user to the homepage or callback URL
+  //         router.push(props.callbackUrl ? props.callbackUrl : "/");
+  //       }
+  //     } catch (err: any) {
+  //       // Handle unexpected errors
+  //       console.error("Error during sign in", err);
+  //       toast.error(
+  //         "Failed to login: " + (err.message || "An unexpected error occurred.")
+  //       ); // Notify user
+  //     }
+  //   });
+  // };
+const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  startTransition(async () => {
+    try {
+      const response = await signIn("credentials", {
+        email: values.email,
+        password: values.password,
+        redirect: false, 
+      });
+
+      console.log("Response in Server Action", response); 
+
+      if (response?.error) {
+        toast.error(response.error);
+        if (response.error === "Error: User not found") {
+          form.setError("email", { type: "manual", message: "User not found" });
         }
-        if (response?.error && response.error === "Error: Incorrect password") {
-          toast.error(response.error);
+        if (response.error === "Error: Incorrect password") {
+          form.setError("password", { type: "manual", message: "Incorrect password" });
         }
-        if (
-          response?.error &&
-          response.error === "Error: Verification Email sent... Please Verify"
-        ) {
-          toast.error(response.error);
+        if (response.error === "Error: Verification Email sent... Please Verify") {
           router.push(`/verify-user`);
           return;
         }
-        if (
-          response?.error &&
-          response.error === "Error: OTP sent. Please check your email."
-        ) {
-          toast.error(response.error);
+        if (response.error === "Error: OTP sent. Please check your email.") {
           router.push(`/verify-otp/${values.email}`);
           return;
         }
-
-        // If successful
-        if (response?.ok) {
-          toast.success("Login successful!"); // Notify user of successful login
-          // Redirect user to the homepage or callback URL
-          router.push(props.callbackUrl ? props.callbackUrl : "/");
-        }
-      } catch (err: any) {
-        // Handle unexpected errors
-        console.error("Error during sign in", err);
-        toast.error(
-          "Failed to login: " + (err.message || "An unexpected error occurred.")
-        ); // Notify user
       }
-    });
-  };
+
+      // If successful
+      if (response?.ok) {
+        toast.success("Login successful!"); 
+        router.push(props.callbackUrl ? props.callbackUrl : "/");
+      }
+    } catch (err: any) {
+      console.error("Error during sign in", err);
+      toast.error("Failed to login: " + (err.message || "An unexpected error occurred."));
+    }
+  });
+};
 
   return (
     <Form {...form}>
@@ -124,8 +164,8 @@ const SignInForm = (props: Props) => {
           render={({ field }) => (
             <FormItem>
               <div className="flex justify-between w-full items-center">
-                <FormLabel>Password</FormLabel>
-                <FormMessage />
+                <FormLabel className=" font-extrabold">Password</FormLabel>
+                <FormMessage  className=" font-extrabold" />
               </div>
 
               <FormControl>
