@@ -17,7 +17,7 @@ import { Button } from "../../components/ui/button";
 import Link from "next/link";
 // import Login from "@/app/actions/login";
 import { signIn } from "next-auth/react";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { authenticate } from "@/lib/actions/user";
 interface Props {
@@ -53,6 +53,9 @@ const SignInForm = (props: Props) => {
         console.log("Response in Server Action", response); // Debugging line to see the response
 
         if (response?.error && response.error === "Error: User not found") {
+          toast.error(response.error);
+        }
+        if (response?.error && response.error === "Error: Incorrect password") {
           toast.error(response.error);
         }
         if (
