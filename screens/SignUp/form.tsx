@@ -79,7 +79,7 @@ const SignUpForm = () => {
     startTransition(async () => {
       try {
         const response = await fetch(
-          `/api/auth/signup`,
+          `https://ahsan-ali-franciso-backend.vercel.app/api/auth/signup`,
           {
             method: "POST",
             headers: {
