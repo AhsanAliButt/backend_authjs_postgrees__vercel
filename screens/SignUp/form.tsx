@@ -100,6 +100,7 @@ const SignUpForm = () => {
             type: "manual",
             message: data.message, // Use the message from the response
           });
+          toast.error(data.message)
         } else if (!response.ok) {
           // Handle other possible errors
           throw new Error(data.message || "Signup failed");
