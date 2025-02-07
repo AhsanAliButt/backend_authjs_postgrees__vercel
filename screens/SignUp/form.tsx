@@ -15,7 +15,7 @@ import { z } from "zod";
 import React, { startTransition, useTransition } from "react";
 import { Button } from "../../components/ui/button";
 import Link from "next/link";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { register } from "@/lib/actions/user";
 const formSchema = z
@@ -79,7 +79,7 @@ const SignUpForm = () => {
     startTransition(async () => {
       try {
         const response = await fetch(
-          `https://ahsan-ali-franciso-backend.vercel.app/api/auth/signup`,
+          `/api/auth/signup`,
           {
             method: "POST",
             headers: {
