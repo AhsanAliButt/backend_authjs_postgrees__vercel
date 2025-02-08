@@ -92,12 +92,14 @@ export const authOptions = {
         token.accessToken = account.access_token;
         // console.log("Account access token:", account.access_token); // Check if this logs correctly
       }
-      if (trigger === "update" && session) {
-        console.log("Session",token,session)
-      token = { ...token, user: session };
-         
-      console.log("Session in auth session", session, "Token in auth update", token);
-      if (session.role) token.user.role = session.role;
+if (trigger === "update" && session) {
+      console.log("Session", token, session);
+
+      // Merge existing user values with session values
+      token.user = { 
+        ...token.user,  // Keep existing user properties
+        ...session,     // Update with session values
+      };
      
         return token;
       }
