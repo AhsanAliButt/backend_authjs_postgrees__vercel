@@ -100,13 +100,18 @@ export const columns: ColumnDef<User>[] = [
     accessorKey: "verified",
     header: () => "Verified",
     cell: ({ row }) => (
-      <div>{row.getValue("isVerified") ? "true" : "false"}</div>
+      <div>{row.getValue("verified") ? "true" : "false"}</div>
     ),
   },
   {
     accessorKey: "isAccess",
     header: () => "Access",
     cell: ({ row }) => <div>{row.getValue("isAccess") ? "true" : "false"}</div>,
+  },
+    {
+    accessorKey: "congratsEmailSent",
+    header: () => "Congrats Email Sent",
+    cell: ({ row }) => <div>{row.getValue("congratsEmailSent") ? "true" : "false"}</div>,
   },
   {
     id: "actions",
