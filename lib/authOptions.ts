@@ -94,7 +94,7 @@ export const authOptions = {
       }
       if (trigger === "update" && session) {
         console.log("Session",token,session)
-      token = { ...token, user: session?.user };
+      token = { ...token, user: session };
          
       console.log("Session in auth session", session, "Token in auth update", token);
       if (session.role) token.user.role = session.role;

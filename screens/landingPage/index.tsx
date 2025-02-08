@@ -29,7 +29,6 @@ const LandingPage = () => {
       );
 
       const data = await response.json();
-
       if (response.ok) {
         toast.success(data.message);
         await update({ role:"ADMIN" })
@@ -43,6 +42,7 @@ const LandingPage = () => {
     } finally {
       setLoading(false);
     }
+    
   };
 
   return (
