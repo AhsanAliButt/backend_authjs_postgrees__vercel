@@ -35,7 +35,7 @@ export const sendVerificationEmail = async (email: string, token: string) => {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: `Acme <${process.env.EMAIL_FROM}>`,
+      from: `Ahsan <${process.env.EMAIL_FROM}>`,
       to: [email], // `to` must be in an array
       subject: "Verify Your Account",
       react: MagicLinkEmail({ loginLink: verificationLink }), // Pass the firstName to your EmailTemplate
@@ -56,7 +56,7 @@ export const sendVerificationEmail = async (email: string, token: string) => {
 export const sendCongratsEmail = async (email: string, name: string) => {
   try {
     const { data, error } = await resend.emails.send({
-      from: `Acme <${process.env.EMAIL_FROM}>`,
+      from: `Ahsan <${process.env.EMAIL_FROM}>`,
       to: [email], // `to` must be in an array
       subject: "Verify Your Account",
       react: MagicLinkEmail({ loginLink: name }), // Pass the firstName to your EmailTemplate

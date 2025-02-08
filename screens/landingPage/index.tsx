@@ -5,7 +5,7 @@ import React, { useState } from "react";
 
 import { useSession } from "next-auth/react";
 import { signOut } from "next-auth/react";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import Dropdown from "./Dropdown";
 import UsersList from "../adminTable";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,6 @@ const LandingPage = () => {
 
   console.log("SESSION >>>>", session);
   const [loading, setLoading] = useState(false);
-
   const handlePromote = async () => {
     setLoading(true);
     try {
@@ -33,6 +32,7 @@ const LandingPage = () => {
 
       if (response.ok) {
         toast.success(data.message);
+        await update({ role:"ADMIN" })
         // Optionally, refresh the page or update local state
       } else {
         toast.error(data.message);

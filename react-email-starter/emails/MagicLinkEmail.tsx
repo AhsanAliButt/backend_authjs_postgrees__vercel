@@ -22,8 +22,8 @@ export const MagicLinkEmail = ({ loginLink }: MagicLinkEmailProps) => (
     <Preview>Welcome Email</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Welcome ${loginLink}</Heading>
-        <code style={code}>{loginLink} Welcome to our store</code>
+        <Heading style={h1}>Please verify your account</Heading>
+        <code style={code}>{loginLink}</code>
       </Container>
     </Body>
   </Html>

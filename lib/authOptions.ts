@@ -93,13 +93,17 @@ export const authOptions = {
         // console.log("Account access token:", account.access_token); // Check if this logs correctly
       }
       if (trigger === "update" && session) {
-        token = { ...token, user: session?.user };
+        console.log("Session",token,session)
+      token = { ...token, user: session?.user };
+         
+      console.log("Session in auth session", session, "Token in auth update", token);
+      if (session.role) token.user.role = session.role;
+     
         return token;
       }
       return token;
     },
     async session({ token, session }) {
-      // console.log("token>>>>", token, "session>>>>", session);
       if (session?.user) {
         session.user = token.user;
         session.accessToken = token.accessToken;
