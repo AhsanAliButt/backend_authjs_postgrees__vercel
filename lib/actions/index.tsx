@@ -6,7 +6,7 @@ import { prisma } from "../db";
 
 const VerifyToken = async (token: string) => {
   const existingToken = await getVerificationTokenByToken(token);
-  // console.log('🚀 ~ VerifyToken ~ existingToken:', existingToken)
+  
   if (!existingToken) {
     return { message: "Token does not exist", status: 404 };
   }
@@ -15,7 +15,7 @@ const VerifyToken = async (token: string) => {
     return { message: "Token expired", status: 401 };
   }
   const existingUser = await getUserByEmail(existingToken.email);
-  // console.log('🚀 ~ VerifyToken ~ existingUser:', existingUser)
+ 
   if (!existingUser) {
     return { message: "Email does not exist", status: 400 };
   }

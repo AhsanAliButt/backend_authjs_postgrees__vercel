@@ -53,29 +53,6 @@ const SignUpForm = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    // startTransition(async () => {
-    //   await register(values).then(
-    //     async (data: { json: () => any; status: number }) => {
-    //       const response = await data.json();
-    //       if (data.status === 409) {
-    //         form.setError("email", {
-    //           type: "manual",
-    //           message: response.message,
-    //         });
-    //       } else {
-    //         console.log(
-    //           response,
-    //           response.status,
-    //           data.status,
-    //           response.username
-    //         );
-    //         console.log("SIGN UP RESPONSE", response.message);
-    //         await toast.success("Welcome", response.message);
-    //         router.push("/verify-user");
-    //       }
-    //     }
-    //   );
-    // });
     startTransition(async () => {
       try {
         const response = await fetch(
@@ -92,9 +69,7 @@ const SignUpForm = () => {
             }),
           }
         );
-
         const data = await response.json(); // Parse the JSON response
-        console.log("Data >>>>>>", data);
         if (response.status === 409) {
           form.setError("email", {
             type: "manual",
@@ -106,16 +81,14 @@ const SignUpForm = () => {
           throw new Error(data.message || "Signup failed");
         } else {
           // Successful signup
-          console.log("SIGN UP RESPONSE", data.message);
           toast.success("Welcome! " + data.message); // Display success toast
           router.push("/verify-user"); // Redirect after successful signup
         }
       } catch (error) {
-        console.error("Error during signup:", error);
         toast.error("Signup failed: " + error); // Display error toast
       }
     });
-  };
+  };1
 
   return (
     <Form {...form}>

@@ -36,7 +36,6 @@ const getAllUsers = async () => {
     }
 
     const data = await response.json();
-    console.log("Fetched users:", data);
 
     return data;
   } catch (error) {

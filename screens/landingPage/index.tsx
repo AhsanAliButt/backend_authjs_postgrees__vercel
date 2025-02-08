@@ -12,8 +12,6 @@ import { Button } from "@/components/ui/button";
 const LandingPage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { status, update, data: session } = useSession();
-
-  console.log("SESSION >>>>", session);
   const [loading, setLoading] = useState(false);
   const handlePromote = async () => {
     setLoading(true);

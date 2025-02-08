@@ -24,10 +24,9 @@ const VerifyOtp = () => {
     if (!otp) return;
     VerifyOtpCode(otp)
       .then((data) => {
-        console.log("Data coming From Verify Token", data);
         if (data.status === 201) {
           setSuccess(data.message);
-          console.log("Email >>>", data.email);
+         
           router.push("/signin");
           return;
         } else if (data.status === 404) {

@@ -13,7 +13,7 @@ export const sendOtpVerification = async (email: string) => {
   const token = generateOtp();
   const expires = new Date(new Date().getTime() + 3600 * 1000);
   const existingToken = await getVerificationTokenByEmail(email);
-  console.log("EXISTING TOKEN", existingToken);
+ 
   if (existingToken) {
     await prisma.verificationToken.delete({
       where: {

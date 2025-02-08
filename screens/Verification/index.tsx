@@ -15,7 +15,6 @@ type InfoProps = {
 const NewVerification = () => {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-  // console.log('🚀 ~ NewVerification ~ token:', token)
   const router = useRouter();
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
@@ -23,7 +22,6 @@ const NewVerification = () => {
     if (!token) return;
     VerifyToken(token)
       .then((data) => {
-        console.log("Data coming From Verify Token", data);
         if (data.status === 201) {
           setSuccess(data.message);
           router.push("/signin");

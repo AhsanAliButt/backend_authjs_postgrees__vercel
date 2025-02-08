@@ -10,7 +10,6 @@ export async function POST(req: Request) {
     await prisma.$connect();
     const body = await req.json();
     const { firstname, lastname, email, password } = body;
-    console.log("[SIGNUP_USER]", { body });
     if (!email) {
       return NextResponse.json(
         { message: "Email is required" },
@@ -43,20 +42,16 @@ export async function POST(req: Request) {
         password: hashedPassword,
       },
     });
-    console.log("NEW USER CREATED", newUser);
     const generateTokenAndSendEmail = await generateVerificationToken(
       newUser.email
     );
 
     console.log("generateToken", generateTokenAndSendEmail);
-
-    // console.log("SEND USER verifaction email status", sendOtpResponse.message);
     return NextResponse.json(
       { user: newUser, message: "Verification email sent" },
       { status: 201 }
     );
   } catch (error) {
-    console.error("[SIGNUP_USER_ERROR]", error);
     return new NextResponse("Internal error", { status: 500 });
   } finally {
     await prisma.$disconnect();

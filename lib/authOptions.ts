@@ -38,7 +38,6 @@ export const authOptions = {
         token: { label: "Token", type: "text" },
       },
       async authorize(credentials: any) {
-        console.log("authorize", credentials);
         if (!credentials || !credentials.email || !credentials.password) {
           throw new Error("Missing credentials");
         }
@@ -77,7 +76,6 @@ export const authOptions = {
             verified: user.verified,
           };
         } catch (error: any) {
-          console.error("Auth Error", error);
           throw new Error(error); // Throw a generic error message
         }
       },
@@ -86,15 +84,14 @@ export const authOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, user, account, trigger, session }) {
-      // console.log("Account", account);
+      
       if (user && account) {
         token.user = user as User;
         token.accessToken = account.access_token;
-        // console.log("Account access token:", account.access_token); // Check if this logs correctly
+      
       }
 if (trigger === "update" && session) {
-      console.log("Session", token, session);
-
+      
       // Merge existing user values with session values
       token.user = { 
         ...token.user,  // Keep existing user properties

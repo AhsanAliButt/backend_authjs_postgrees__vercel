@@ -15,8 +15,6 @@ export const register = async (values: any) => {
       username: values.username,
     }),
   });
-
-  console.log("Response >>> in Api", response);
   return response;
 };
 
@@ -24,7 +22,7 @@ export async function authenticate(values: {
   email: string;
   password: string;
 }) {
-  console.log("Values", values);
+  
   try {
     const response = await signIn("credentials", {
       email: values.email,
@@ -32,7 +30,7 @@ export async function authenticate(values: {
       redirect: false, // Don't redirect automatically
     });
 
-    console.log("Response in Server Action", response);
+   
 
     // Check if signIn was successful
     if (response?.error) {
@@ -44,8 +42,7 @@ export async function authenticate(values: {
     // If successful
     return { success: true, message: "Login successful" };
   } catch (err: any) {
-    // Handle unexpected errors
-    console.error("Error during sign in", err);
+    
     return { error: { message: "Failed to login", error: err.message || err } };
   }
 }
