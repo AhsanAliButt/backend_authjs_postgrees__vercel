@@ -200,11 +200,10 @@ const LandingPage = () => {
       <div>
         {session?.user.role === "ADMIN" ? (
           <>
-            <div className="mt-20">
+            <div className="mt-20 w-80 md:w-[640px] lg:w-auto">
               {" "}
               Users Table will only show if user is admin{" "}
-            </div>
-            <div>
+            
               <UsersList />
             </div>
           </>
