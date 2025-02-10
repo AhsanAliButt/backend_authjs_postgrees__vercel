@@ -46,6 +46,25 @@ export type User = {
   congratsEmailSent: boolean;
 };
 
+
+const handleDelete = (userId: string) => {
+  console.log("Deleting user with ID:", userId);
+  
+  fetch(`/api/delete-user/${userId}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error(`HTTP error! Status: ${res.status}`);
+      }
+      return res.json();
+    })
+    .then((data) => console.log("User deleted successfully:", data))
+    .catch((error) => console.error("Error deleting user:", error));
+};
 // Updated columns for User data
 export const columns: ColumnDef<User>[] = [
   {
@@ -131,7 +150,9 @@ export const columns: ColumnDef<User>[] = [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
 
             <DropdownMenuItem>Update</DropdownMenuItem>
-            <DropdownMenuItem>Delete</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleDelete(user.id)}>
+              Delete
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -167,7 +188,7 @@ const DataTableDemo = ({ users }: { users: User[] }) => {
     },
   });
 
-  // return (
+
   //   <div className="w-full">
   //     <div className="flex items-center py-4">
   //       <Input

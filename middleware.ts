@@ -12,6 +12,11 @@ const ignoreRoute = [
     method: "GET",
     match: "startWith",
   },
+    {
+    path: "/delete-user",
+    method: "DELETE",
+    match: "startWith",
+  },
   {
     path: "/new-verification",
     method: "GET",
