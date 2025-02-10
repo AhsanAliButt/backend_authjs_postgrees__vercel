@@ -159,20 +159,33 @@ const LandingPage = () => {
           </motion.div>
         )}
       </nav>
-      <div>
-        {session ? (
-          <>
-            <div>
-              <div className="color:blue"> Current User</div>
-              <div>Email:{session?.user?.email}</div>
-              <div>FullName:{session?.user?.fullname}</div>
-              <div>Role:{session?.user?.role}</div>
-            </div>
-          </>
-        ) : (
-          <></>
-        )}
-      </div>
+     <div>
+  {session ? (
+    <table className="border-collapse border border-gray-300 w-full max-w-lg mt-2">
+      <thead>
+        <tr className="bg-blue-500 text-white">
+          <th className="border border-gray-300 px-4 py-2">Field</th>
+          <th className="border border-gray-300 px-4 py-2">Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td className="border border-gray-300 px-4 py-2">Email</td>
+          <td className="border border-gray-300 px-4 py-2">{session?.user?.email}</td>
+        </tr>
+        <tr>
+          <td className="border border-gray-300 px-4 py-2">Full Name</td>
+          <td className="border border-gray-300 px-4 py-2">{session?.user?.fullname}</td>
+        </tr>
+        <tr>
+          <td className="border border-gray-300 px-4 py-2">Role</td>
+          <td className="border border-gray-300 px-4 py-2">{session?.user?.role}</td>
+        </tr>
+      </tbody>
+    </table>
+  ) : null}
+</div>
+
 
       <div>
         {session && session?.user.role !== "ADMIN" ? (
