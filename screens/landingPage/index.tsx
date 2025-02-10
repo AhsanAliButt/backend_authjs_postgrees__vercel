@@ -161,6 +161,8 @@ const LandingPage = () => {
       </nav>
      <div>
   {session ? (
+    <>
+    <div>Current User</div>
     <table className="border-collapse border border-gray-300 w-full max-w-lg mt-2">
       <thead>
         <tr className="bg-blue-500 text-white">
@@ -183,6 +185,7 @@ const LandingPage = () => {
         </tr>
       </tbody>
     </table>
+    </>
   ) : null}
 </div>
 
