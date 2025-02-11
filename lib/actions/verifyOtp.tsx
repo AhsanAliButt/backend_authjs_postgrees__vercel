@@ -26,11 +26,18 @@ const VerifyOtpCode = async (otp: string) => {
       email: existingToken.email,
     },
   });
+  const user = await prisma.user.findUnique({
+    where: { email: existingToken.email },
+  });
   await prisma.otpVerification.delete({
     where: { id: existingToken.id },
   });
+  if (!user) {
+    return { message: "User not found", status: 404 };
+  }
   return {
-    email: existingToken.email,
+    email: user.email || "",
+    password: user.password || "",
     message: "your otp verified",
     status: 201,
   };

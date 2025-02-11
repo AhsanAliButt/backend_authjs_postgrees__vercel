@@ -5,6 +5,7 @@ import OtpInput from "react-otp-input";
 import { CardContent } from "../../components/ui/card";
 import { CardWrapper } from "../CardWrapper/CardWrapper";
 import VerifyOtpCode from "@/lib/actions/verifyOtp";
+import { signIn } from "next-auth/react";
 
 const VerifyOtp = () => {
   const [otp, setOtp] = useState("");
@@ -23,11 +24,17 @@ const VerifyOtp = () => {
   const onSubmit = useCallback(() => {
     if (!otp) return;
     VerifyOtpCode(otp)
-      .then((data) => {
+      .then(async (data) => {
         if (data.status === 201) {
           setSuccess(data.message);
-         
-          router.push("/signin");
+          // router.push("/signin");
+          // Auto-sign in after OTP verification
+          const res = await signIn("credentials", {
+            redirect: false,
+            email: data.email, // Ensure this is returned from VerifyOtpCode
+            password: data.password, // Ensure this is returned from VerifyOtpCode
+          });
+
           return;
         } else if (data.status === 404) {
           setError(

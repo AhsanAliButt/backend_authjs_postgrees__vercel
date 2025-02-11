@@ -50,7 +50,7 @@ export type User = {
 const handleDelete = (userId: string) => {
   console.log("Deleting user with ID:", userId);
   
-  fetch(`/api/delete-user/${userId}`, {
+  fetch(`https://ahsan-ali-franciso-backend.vercel.app/delete-user/${userId}`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
