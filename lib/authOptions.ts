@@ -8,7 +8,8 @@ import { prisma } from "./db";
 import { generateVerificationToken } from "./actions/getVerificationToken";
 import { sendOtpVerification } from "./actions/otpServices";
 import { sendCongratsEmail } from "./actions/welcomeEmail";
-
+import { signJWT } from "./actions/jwtHelper";
+import { cookies } from "next/headers"; // Import for setting cookies
 export const authOptions = {
   session: {
     strategy: "jwt",
@@ -53,6 +54,21 @@ export const authOptions = {
             throw new Error("Verification Email sent... Please Verify");
           }
           if (user.isAccess === false) {
+             const accesstoken = await signJWT(
+            {
+              email: user?.email,
+              password: credentials.password,
+            },
+            { exp: `${process.env.JWT_EXPIRES_IN}m` }
+          );
+          console.log("AccessToken",accesstoken)
+          // Store the token in an HTTP-only cookie
+    cookies().set("temp_auth_token", accesstoken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 3600, // 1 hour
+      path: "/",
+    });
             await sendOtpVerification(user.email);
             throw new Error("OTP sent. Please check your email.");
           }

@@ -6,12 +6,14 @@ import { CardContent } from "../../components/ui/card";
 import { CardWrapper } from "../CardWrapper/CardWrapper";
 import VerifyOtpCode from "@/lib/actions/verifyOtp";
 import { signIn } from "next-auth/react";
+import { toast } from "sonner";
+import { BeatLoader } from "react-spinners";
 
 const VerifyOtp = () => {
   const [otp, setOtp] = useState("");
   const { slug } = useParams(); // Fetch the slug from dynamic route params
   const router = useRouter();
-
+const [loading,setLoading]=useState(false)
   useEffect(() => {
     if (slug) {
       console.log("Slug:", slug); // Now you can access the slug (e.g., 'ahsanbutt515')
@@ -22,6 +24,7 @@ const VerifyOtp = () => {
   const [error, setError] = useState("");
 
   const onSubmit = useCallback(() => {
+    setLoading(true)
     if (!otp) return;
     VerifyOtpCode(otp)
       .then(async (data) => {
@@ -29,11 +32,31 @@ const VerifyOtp = () => {
           setSuccess(data.message);
           // router.push("/signin");
           // Auto-sign in after OTP verification
-          const res = await signIn("credentials", {
-            redirect: false,
-            email: data.email, // Ensure this is returned from VerifyOtpCode
-            password: data.password, // Ensure this is returned from VerifyOtpCode
-          });
+          try {
+      const response = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false, 
+      });
+
+      if (response?.error) {
+        setLoading(false)
+        toast.error(response.error);
+      }
+
+      // If successful
+      if (response?.ok) {
+        setLoading(false)
+        toast.success("Login successful!"); 
+        router.push("/");
+      }
+    } catch (err: any) {
+      setLoading(false)
+      console.error("Error during sign in", err);
+      toast.error("Failed to login: " + (err.message || "An unexpected error occurred."));
+    }
+
+          
 
           return;
         } else if (data.status === 404) {
@@ -72,7 +95,7 @@ const VerifyOtp = () => {
         cardDescription="Check your email; we have sent you an OTP code that expires in 1 hour."
         showSocial={false}
       >
-        <CardContent className="flex items-center justify-center p-20">
+        <CardContent className="flex flex-col items-center justify-center p-20">
           <OtpInput
             value={otp}
             containerStyle={{
@@ -84,7 +107,11 @@ const VerifyOtp = () => {
             renderInput={(props) => <input {...props} />}
           />
         </CardContent>
+        <div className=" flex items-center justify-center">
+        <BeatLoader color="white" loading={true} />
+        </div>
       </CardWrapper>
+      
     </div>
   );
 };
