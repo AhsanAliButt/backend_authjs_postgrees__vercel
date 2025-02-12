@@ -14,11 +14,7 @@ const VerifyOtp = () => {
   const { slug } = useParams(); // Fetch the slug from dynamic route params
   const router = useRouter();
 const [loading,setLoading]=useState(false)
-  useEffect(() => {
-    if (slug) {
-      console.log("Slug:", slug); // Now you can access the slug (e.g., 'ahsanbutt515')
-    }
-  }, [slug]);
+  
 
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
