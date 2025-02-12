@@ -195,7 +195,7 @@ const LandingPage = () => {
           <>
             <div className="mt-20">
               {" "}
-              Users Button will only show if user is not an admin{" "}
+              Promote Button will only show if user is not an admin{" "}
             </div>
             <div className="">
               <Button

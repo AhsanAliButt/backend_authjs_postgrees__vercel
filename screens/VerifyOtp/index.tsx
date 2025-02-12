@@ -108,7 +108,7 @@ const [loading,setLoading]=useState(false)
           />
         </CardContent>
         <div className=" flex items-center justify-center">
-        <BeatLoader color="white" loading={true} />
+        <BeatLoader color="white" loading={loading} />
         </div>
       </CardWrapper>
       
